@@ -1,5 +1,3 @@
-i
-
 SOTA by Public Transport filter
 
 This program is used to filter Summits on the Air locations against public transport infrastructure to find summits that are potentially accessible via public transport.
