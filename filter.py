@@ -35,7 +35,7 @@ def read_stops(stop_file):
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
         
     for stop in stop_reader:
-        if stop["Latitude"] == "":
+        if stop["Latitude"] == "" or stop["Status"] == "inactive":
             continue
 
         lat = float(stop["Latitude"])
