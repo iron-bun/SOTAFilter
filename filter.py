@@ -24,8 +24,9 @@ SOFTWARE.
 """
 
 import csv
+import sys
 
-distance_filter = 0.13
+distance_filter = 0.0625
 
 def read_stops(stop_file):
 
@@ -48,8 +49,8 @@ def read_stops(stop_file):
         if max_long == None or lon > max_long:
             max_long = lon
 
-        lat = int(lat // distance_filter)
-        lon = int(lon // distance_filter)
+        lat = round(lat / distance_filter)
+        lon = round(lon / distance_filter)
         if lat not in stops:
             stops[lat] = dict()
         if lon not in stops[lat]:
@@ -59,7 +60,7 @@ def read_stops(stop_file):
     return min_lat, max_lat, min_long, max_long, stops
 
 
-def main():
+def main(origin_lat, origin_long):
     with open("Stops.csv") as stop_file:
         min_lat, max_lat, min_long, max_long, stops = read_stops(stop_file)
 
@@ -67,12 +68,12 @@ def main():
         summits_file.readline()
         summit_reader = csv.DictReader(summits_file, delimiter=",", quotechar="\"")
 
+        stations = []
         for summit in summit_reader:
             if float(summit["Latitude"]) < min_lat - 1 or float(summit["Latitude"]) > max_lat + 1 or float(summit["Longitude"]) < min_long - 1 or float(summit["Longitude"]) > max_long + 1:
                 continue
 
-            lat,lon = int(float(summit["Latitude"]) // distance_filter), int(float(summit["Longitude"]) // distance_filter)
-            stations = []
+            lat,lon = round(float(summit["Latitude"]) / distance_filter), round(float(summit["Longitude"]) / distance_filter)
             for i in range(lat-1, lat+2):
                 for j in range(lon-1, lon+2):
                     if i in stops and j in stops[i]:
@@ -80,11 +81,15 @@ def main():
                             dist = (stop[2] - float(summit["Latitude"]))**2 + (stop[3] - float(summit["Longitude"]))**2
                             dist **= 0.5
                             if dist <= distance_filter:
-                                stations.append((dist, summit["SummitCode"], stop))
-            stations = sorted(stations, key=lambda x: x[0])
-            for station in stations:
-                print(station)
+                                origin_dist = (origin_lat - float(summit["Latitude"]))**2 + (origin_lon - float(summit["Longitude"]))**2
+                                origin_dist **= 0.5
+                                stations.append(((origin_dist, dist), summit["SummitCode"], stop))
+        stations = sorted(stations, key=lambda x: x[0])
+        for station in stations:
+            print(station)
 
 
 if __name__ == "__main__":
-    main()
+    origin_lat, origin_lon = float(sys.argv[1]), float(sys.argv[2])
+    main(origin_lat, origin_lon)
+
