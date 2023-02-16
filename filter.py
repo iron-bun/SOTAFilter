@@ -61,10 +61,10 @@ def read_stops(stop_file):
 
 
 def main(origin_lat, origin_long):
-    with open("Stops.csv") as stop_file:
+    with open("Stops.csv", encoding='utf-8') as stop_file:
         min_lat, max_lat, min_long, max_long, stops = read_stops(stop_file)
 
-    with open("summitslist.csv", newline="") as summits_file:
+    with open("summitslist.csv", newline="", encoding='utf-8') as summits_file:
         summits_file.readline()
         summit_reader = csv.DictReader(summits_file, delimiter=",", quotechar="\"")
 
