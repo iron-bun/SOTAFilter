@@ -72,6 +72,7 @@ def main():
                 continue
 
             lat,lon = int(float(summit["Latitude"]) // distance_filter), int(float(summit["Longitude"]) // distance_filter)
+            stations = []
             for i in range(lat-1, lat+2):
                 for j in range(lon-1, lon+2):
                     if i in stops and j in stops[i]:
@@ -79,7 +80,10 @@ def main():
                             dist = (stop[2] - float(summit["Latitude"]))**2 + (stop[3] - float(summit["Longitude"]))**2
                             dist **= 0.5
                             if dist <= distance_filter:
-                                print(summit["SummitCode"], stop, dist)
+                                stations.append((dist, summit["SummitCode"], stop))
+            stations = sorted(stations, key=lambda x: x[0])
+            for station in stations:
+                print(station)
 
 
 if __name__ == "__main__":
