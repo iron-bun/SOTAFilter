@@ -77,6 +77,7 @@ def main():
         min_lat, max_lat, min_long, max_long, stops = read_stops(stop_file)
 
     with open("summitslist.csv", newline="") as summits_file:
+        summits_file.readline()
         summit_reader = csv.DictReader(summits_file, delimiter=",", quotechar="\"")
 
         for summit in summit_reader:
