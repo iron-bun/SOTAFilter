@@ -25,7 +25,7 @@ SOFTWARE.
 
 import csv
 
-distance_filter = 0.0625
+distance_filter = 0.13
 
 def read_stops(stop_file):
 
@@ -58,19 +58,6 @@ def read_stops(stop_file):
 
     return min_lat, max_lat, min_long, max_long, stops
 
-def trim_summits(min_lat, max_lat, min_long, max_long):
-
-    with open("summitslist_All.csv", newline="") as summits_file, open("summitslist.csv", "w", newline="") as output_file:
-        summits_file.readline()
-
-        summit_reader = csv.DictReader(summits_file, delimiter=",", quotechar="\"")
-        field_names = ["SummitCode", "Longitude", "Latitude"]
-        summit_writer = csv.DictWriter(output_file, fieldnames=field_names)
-
-        summit_writer.writeheader()
-        for summit in summit_reader:
-            if min_lat - 1 < float(summit["Latitude"]) < max_lat + 1 and min_long - 1 < float(summit["Longitude"]) < max_long + 1:
-                summit_writer.writerow({"SummitCode": summit["SummitCode"], "Latitude": summit["Latitude"], "Longitude": summit["Longitude"]})
 
 def main():
     with open("Stops.csv") as stop_file:
@@ -92,7 +79,7 @@ def main():
                             dist = (stop[2] - float(summit["Latitude"]))**2 + (stop[3] - float(summit["Longitude"]))**2
                             dist **= 0.5
                             if dist <= distance_filter:
-                                print(summit["SummitCode"], stop)
+                                print(summit["SummitCode"], stop, dist)
 
 
 if __name__ == "__main__":
