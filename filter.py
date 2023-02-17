@@ -25,6 +25,7 @@ SOFTWARE.
 
 import csv
 import argparse
+import json
 
 distance_filter = 0.0625
 
@@ -55,7 +56,27 @@ def read_gb_stops(stop_file):
 def read_ni_stops(stop_file):
     return read_gb_ni_stops(stop_file, False, "AtcoCode")
 
-stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops}
+def read_ie_stops(stop_file):
+
+    stop_reader = json.load(stop_file)
+    stops = dict()
+
+    for stop in stop_reader["features"]:
+        if "isActive" in stop["properties"] and not stop["properties"]["isActive"]:
+            continue
+
+        lat = round(stop["geometry"]["coordinates"][1] / distance_filter)
+        lon = round(stop["geometry"]["coordinates"][0] / distance_filter)
+
+        if lat not in stops:
+            stops[lat] = dict()
+        if lon not in stops[lat]:
+            stops[lat][lon] = []
+        stops[lat][lon].append((stop["properties"]["AtcoCode"], stop["properties"]["CommonName"], stop["geometry"]["coordinates"][1], stop["geometry"]["coordinates"][0]))
+
+    return stops
+
+stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops}
 
 def main(args):
 
@@ -82,13 +103,14 @@ def main(args):
     for station in stations:
         print(station)
 
+
 def get_arguments():
     parser = argparse.ArgumentParser(
                     prog = "SOTAfilter",
                     description = "Return a list of SOTA summits near public transport sites ordered by distance to the user",
                     epilog = "Text at the bottom of help")
 
-    parser.add_argument("stop_file_type", choices=["gb","ni"], help="gb for Great Britian. ni for Northern Ireland.")
+    parser.add_argument("stop_file_type", choices=["gb","ni","ie"], help="gb for Great Britian. ni for Northern Ireland. ie for Republic of Ireland")
     parser.add_argument("stop_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("user_latitude", type=float)
