@@ -32,7 +32,7 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
 
     stops = dict()
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
-        
+
     for stop in stop_reader:
         if has_status and (stop["Latitude"] == "" or stop["Status"] == "inactive"):
             continue
@@ -81,7 +81,6 @@ def main(args):
     stations = sorted(stations, key=lambda x: x[0])
     for station in stations:
         print(station)
-
 
 def get_arguments():
     parser = argparse.ArgumentParser(
