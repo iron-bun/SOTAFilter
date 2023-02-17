@@ -16,7 +16,7 @@ Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.
 
 The program accepts an origin latitude and longitude (these are presently mandatory) and orders the list of summits by distance to that origin location, and then distance to stations in order of distance to that summit. For this mode run the script with:
 
-`SOTAfilter [-h] [-r R] [-f {json,csv}] {gb,ni,ie} stop\_file summit\_file user\_latitude user\_longitude`
+`SOTAfilter [-h] [-r R] [-f {json,csv}] {gb,ni,ie} stop_file summit_file user_latitude user_longitude`
 
 There is also a map.html file which uses leaflet (https://leafletjs.com/) to display results on an interactive map. To generate this run the script as follows:
 
