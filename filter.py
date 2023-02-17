@@ -24,82 +24,80 @@ SOFTWARE.
 """
 
 import csv
-import sys
+import argparse
 
 distance_filter = 0.0625
 
-def read_stops(stop_file):
+def read_gb_ni_stops(stop_file,has_status,global_id):
 
-    min_lat, max_lat, min_long, max_long = None, None, None, None
     stops = dict()
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
 
     for stop in stop_reader:
-        if stop["Latitude"] == "" or stop["Status"] == "inactive":
+        if has_status and (stop["Latitude"] == "" or stop["Status"] == "inactive"):
             continue
-
+    
         lat = float(stop["Latitude"])
-        if min_lat == None or lat < min_lat:
-            min_lat = lat
-        if max_lat == None or lat > max_lat:
-            max_lat = lat
         lon = float(stop["Longitude"])
-        if min_long == None or lon < min_long:
-            min_long = lon
-        if max_long == None or lon > max_long:
-            max_long = lon
-
         lat = round(lat / distance_filter)
         lon = round(lon / distance_filter)
         if lat not in stops:
             stops[lat] = dict()
         if lon not in stops[lat]:
             stops[lat][lon] = []
-        stops[lat][lon].append((stop["ATCOCode"], stop["CommonName"], float(stop["Latitude"]), float(stop["Longitude"])))
+        stops[lat][lon].append((stop[global_id], stop["CommonName"], float(stop["Latitude"]), float(stop["Longitude"])))
 
-    return min_lat, max_lat, min_long, max_long, stops
+    return stops
 
+def read_gb_stops(stop_file):
+    return read_gb_ni_stops(stop_file, True, "ATCOCode")
 
-def main(origin_lat, origin_long):
-    try:
-        with open("Stops.csv", encoding='utf-8') as stop_file:
-            min_lat, max_lat, min_long, max_long, stops = read_stops(stop_file)
-    except FileNotFoundError:
-        print("Stops CSV file missing! Exiting...")
-        print("**********************************\n")
-        sys.exit(1)
+def read_ni_stops(stop_file):
+    return read_gb_ni_stops(stop_file, False, "AtcoCode")
 
-    try:
-        with open("summitslist.csv", newline="", encoding='utf-8') as summits_file:
-            summits_file.readline()
-            summit_reader = csv.DictReader(summits_file, delimiter=",", quotechar="\"")
+stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops}
 
-            stations = []
-            for summit in summit_reader:
-                if float(summit["Latitude"]) < min_lat - 1 or float(summit["Latitude"]) > max_lat + 1 or float(summit["Longitude"]) < min_long - 1 or float(summit["Longitude"]) > max_long + 1:
-                    continue
+def main(args):
 
-                lat,lon = round(float(summit["Latitude"]) / distance_filter), round(float(summit["Longitude"]) / distance_filter)
-                for i in range(lat-1, lat+2):
-                    for j in range(lon-1, lon+2):
-                        if i in stops and j in stops[i]:
-                            for stop in stops[i][j]:
-                                dist = (stop[2] - float(summit["Latitude"]))**2 + (stop[3] - float(summit["Longitude"]))**2
-                                dist **= 0.5
-                                if dist <= distance_filter:
-                                    origin_dist = (origin_lat - float(summit["Latitude"]))**2 + (origin_lon - float(summit["Longitude"]))**2
-                                    origin_dist **= 0.5
-                                    stations.append(((origin_dist, dist), summit["SummitCode"], stop))
-            stations = sorted(stations, key=lambda x: x[0])
-            for station in stations:
-                print(station)
-    except FileNotFoundError:
-        print("Summits CSV file missing! Exiting...")
-        print("************************************\n")
-        sys.exit(1)
+    stops = stops_parsers[args.stop_file_type](args.stop_file)
+
+    args.summit_file.readline()
+    summit_reader = csv.DictReader(args.summit_file, delimiter=",", quotechar="\"")
+
+    stations = []
+    for summit in summit_reader:
+
+        lat,lon = round(float(summit["Latitude"]) / distance_filter), round(float(summit["Longitude"]) / distance_filter)
+        for i in range(lat-1, lat+2):
+            for j in range(lon-1, lon+2):
+                if i in stops and j in stops[i]:
+                    for stop in stops[i][j]:
+                        dist = (stop[2] - float(summit["Latitude"]))**2 + (stop[3] - float(summit["Longitude"]))**2
+                        dist **= 0.5
+                        if dist <= distance_filter:
+                            origin_dist = (args.user_latitude - float(summit["Latitude"]))**2 + (args.user_longitude - float(summit["Longitude"]))**2
+                            origin_dist **= 0.5
+                            stations.append(((origin_dist, dist), summit["SummitCode"], stop))
+    stations = sorted(stations, key=lambda x: x[0])
+    for station in stations:
+        print(station)
+
+def get_arguments():
+    parser = argparse.ArgumentParser(
+                    prog = "SOTAfilter",
+                    description = "Return a list of SOTA summits near public transport sites ordered by distance to the user",
+                    epilog = "Text at the bottom of help")
+
+    parser.add_argument("stop_file_type", choices=["gb","ni"], help="gb for Great Britian. ni for Northern Ireland.")
+    parser.add_argument("stop_file", type=argparse.FileType("r", encoding="latin-1"))
+    parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
+    parser.add_argument("user_latitude", type=float)
+    parser.add_argument("user_longitude", type=float)
+
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
-    origin_lat, origin_lon = float(sys.argv[1]), float(sys.argv[2])
-    main(origin_lat, origin_lon)
+    args = get_arguments()
+    main(args)
 
