@@ -33,7 +33,7 @@ def read_stops(stop_file):
     min_lat, max_lat, min_long, max_long = None, None, None, None
     stops = dict()
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
-        
+
     for stop in stop_reader:
         if stop["Latitude"] == "" or stop["Status"] == "inactive":
             continue
@@ -61,32 +61,42 @@ def read_stops(stop_file):
 
 
 def main(origin_lat, origin_long):
-    with open("Stops.csv", encoding='utf-8') as stop_file:
-        min_lat, max_lat, min_long, max_long, stops = read_stops(stop_file)
+    try:
+        with open("Stops.csv", encoding='utf-8') as stop_file:
+            min_lat, max_lat, min_long, max_long, stops = read_stops(stop_file)
+    except FileNotFoundError:
+        print("Stops CSV file missing! Exiting...")
+        print("**********************************\n")
+        sys.exit(1)
 
-    with open("summitslist.csv", newline="", encoding='utf-8') as summits_file:
-        summits_file.readline()
-        summit_reader = csv.DictReader(summits_file, delimiter=",", quotechar="\"")
+    try:
+        with open("summitslist.csv", newline="", encoding='utf-8') as summits_file:
+            summits_file.readline()
+            summit_reader = csv.DictReader(summits_file, delimiter=",", quotechar="\"")
 
-        stations = []
-        for summit in summit_reader:
-            if float(summit["Latitude"]) < min_lat - 1 or float(summit["Latitude"]) > max_lat + 1 or float(summit["Longitude"]) < min_long - 1 or float(summit["Longitude"]) > max_long + 1:
-                continue
+            stations = []
+            for summit in summit_reader:
+                if float(summit["Latitude"]) < min_lat - 1 or float(summit["Latitude"]) > max_lat + 1 or float(summit["Longitude"]) < min_long - 1 or float(summit["Longitude"]) > max_long + 1:
+                    continue
 
-            lat,lon = round(float(summit["Latitude"]) / distance_filter), round(float(summit["Longitude"]) / distance_filter)
-            for i in range(lat-1, lat+2):
-                for j in range(lon-1, lon+2):
-                    if i in stops and j in stops[i]:
-                        for stop in stops[i][j]:
-                            dist = (stop[2] - float(summit["Latitude"]))**2 + (stop[3] - float(summit["Longitude"]))**2
-                            dist **= 0.5
-                            if dist <= distance_filter:
-                                origin_dist = (origin_lat - float(summit["Latitude"]))**2 + (origin_lon - float(summit["Longitude"]))**2
-                                origin_dist **= 0.5
-                                stations.append(((origin_dist, dist), summit["SummitCode"], stop))
-        stations = sorted(stations, key=lambda x: x[0])
-        for station in stations:
-            print(station)
+                lat,lon = round(float(summit["Latitude"]) / distance_filter), round(float(summit["Longitude"]) / distance_filter)
+                for i in range(lat-1, lat+2):
+                    for j in range(lon-1, lon+2):
+                        if i in stops and j in stops[i]:
+                            for stop in stops[i][j]:
+                                dist = (stop[2] - float(summit["Latitude"]))**2 + (stop[3] - float(summit["Longitude"]))**2
+                                dist **= 0.5
+                                if dist <= distance_filter:
+                                    origin_dist = (origin_lat - float(summit["Latitude"]))**2 + (origin_lon - float(summit["Longitude"]))**2
+                                    origin_dist **= 0.5
+                                    stations.append(((origin_dist, dist), summit["SummitCode"], stop))
+            stations = sorted(stations, key=lambda x: x[0])
+            for station in stations:
+                print(station)
+    except FileNotFoundError:
+        print("Summits CSV file missing! Exiting...")
+        print("************************************\n")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
