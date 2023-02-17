@@ -1,11 +1,11 @@
-==== SOTA by Public Transport filter ====
+#### SOTA by Public Transport filter ####
 
 This program is used to filter Summits on the Air locations against public transport infrastructure to find summits that are potentially accessible via public transport. The particular use case is journey planners will frequently fail to find a public transport route from you to the summit but if you can locate a nearby public transport stop and ask the planner to navigate to *that* everything works splendidly.
 
 **Please note: The existence of a bus stop does not indicate the existence of a bus. It is vital to verify your travel plans before setting off**
 
 
-=== Usage ===
+### Usage ###
 
 Dependencies are csv, json and argparse.
 
@@ -27,7 +27,7 @@ There is also a map.html file which uses leaflet (https://leafletjs.com/) to dis
 
 Then open map.html in a browser and open the resulting stations.json file in the file browser. Navigate the map to your location. The -r argument is the range in which summits should be displayed in degrees. Too many results can make the map run slowly.
 
-=== To do list: ===
+### To do list: ###
 
 * Make the map auto-centre when a file is loaded.
 * Make stations appear when a summit is clicked.
