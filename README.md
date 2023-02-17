@@ -4,7 +4,7 @@ This program is used to filter Summits on the Air locations against public trans
 
 **Please note: The existence of a bus stop does not indicate the existence of a bus. It is vital to verify your travel plans before setting off**
 
-Dependencies are csv,json and argparse.
+Dependencies are csv, json and argparse.
 
 Download the stops data for the desired area:
 
@@ -14,13 +14,13 @@ Download the stops data for the desired area:
 
 Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
 
-The program accepts an origin latitude and longitude (these are presently mandatory) and orders the list of summits by distance to that origin location, and then distance to stations in order of distance to that summit.
+The program accepts an origin latitude and longitude (these are presently mandatory) and orders the list of summits by distance to that origin location, and then distance to stations in order of distance to that summit. For this mode run the script with:
 
-usage: usage: SOTAfilter [-h] [-r R] [-f {json,csv}] {gb,ni,ie} stop\_file summit\_file user\_latitude user\_longitude
+`SOTAfilter [-h] [-r R] [-f {json,csv}] {gb,ni,ie} stop\_file summit\_file user\_latitude user\_longitude`
 
-There is also a map.html file which uses leaflet (https://leafletjs.com/) to display results on an interactive map. Run the script as follows
+There is also a map.html file which uses leaflet (https://leafletjs.com/) to display results on an interactive map. To generate this run the script as follows:
 
-    SOTAfilter.py -f json -r 1 <country code> <stops file> <summits file> <your latitude> <your longitude>  > stations.json
+`SOTAfilter.py -f json -r 1 <country code> <stops file> <summits file> <your latitude> <your longitude>  > stations.json`
 
 Then open map.html in a browser and open the resulting stations.json file in the file browser. Navigate the map to your location. The -r argument is the range in which summits should be displayed in degrees. Too many results can make the map run slowly.
 
