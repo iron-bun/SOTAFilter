@@ -78,6 +78,29 @@ def read_ie_stops(stop_file):
 
 stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops}
 
+def print_csv_results(stations):
+
+    print("SummitCode, SummitLatitude, SummitLongitude, StationCode, StationName, StationLatitude, StationLongitude")
+    stations = sorted(stations.items(), key=lambda x:x[1]["origin_dist"])
+    for summit, data in stations:
+        stops = sorted(data["stops"], key=lambda x:x[0])
+        for stop in stops:
+            print(f"{summit}, {data['lat']}, {data['lon']}, {stop[1][0]}, {stop[1][1]}, {stop[1][2]}, {stop[1][3]}")
+
+def print_json_results(stations):
+    results = {"type":"FeatureCollection", "features":[]}
+    
+    for summit in stations:
+        tmp = {"type": "Feature", "properties": {"name": summit, "popupContent":summit}, "geometry":{ "type":"Point", "coordinates":[stations[summit]['lon'], stations[summit]['lat']]}}
+        results["features"].append(tmp)
+        #for stop in stations[summit]['stops']:
+            #tmp = {"type": "Feature", "Properties": {"Name": stop[1][1]}, "geometry":{ "type":"Point", "coordinates": [stop[1][2], stop[1][3]]}}
+            #results["features"].append(tmp)
+
+    print(json.dumps(results))
+    
+results_printers = {'csv':print_csv_results, 'json':print_json_results}
+
 def main(args):
 
     stops = stops_parsers[args.stop_file_type](args.stop_file)
@@ -85,7 +108,8 @@ def main(args):
     args.summit_file.readline()
     summit_reader = csv.DictReader(args.summit_file, delimiter=",", quotechar="\"")
 
-    stations = []
+    stations = dict()
+
     for summit in summit_reader:
 
         lat,lon = round(float(summit["Latitude"]) / distance_filter), round(float(summit["Longitude"]) / distance_filter)
@@ -98,11 +122,11 @@ def main(args):
                         if dist <= distance_filter:
                             origin_dist = (args.user_latitude - float(summit["Latitude"]))**2 + (args.user_longitude - float(summit["Longitude"]))**2
                             origin_dist **= 0.5
-                            stations.append(((origin_dist, dist), summit["SummitCode"], stop))
-    stations = sorted(stations, key=lambda x: x[0])
-    for station in stations:
-        print(station)
-
+                            if args.r == None or args.r > origin_dist:
+                                if summit["SummitCode"] not in stations:
+                                    stations[summit["SummitCode"]] = {"lat":summit["Latitude"], "lon":summit["Longitude"], "origin_dist":origin_dist, "stops":[]}
+                                stations[summit["SummitCode"]]["stops"].append((dist, stop))
+    results_printers[args.f](stations)
 
 def get_arguments():
     parser = argparse.ArgumentParser(
@@ -113,8 +137,10 @@ def get_arguments():
     parser.add_argument("stop_file_type", choices=["gb","ni","ie"], help="gb for Great Britian. ni for Northern Ireland. ie for Republic of Ireland")
     parser.add_argument("stop_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
+    parser.add_argument("-r", type=float, default=None, help="Results range in distance from user lat/long")
     parser.add_argument("user_latitude", type=float)
     parser.add_argument("user_longitude", type=float)
+    parser.add_argument("-f", choices=["json", "csv"], default="csv", help="Output format. Either csv or geoJSON")
 
     return parser.parse_args()
 

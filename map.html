@@ -1,0 +1,50 @@
+<html>
+<head>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+     integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+     crossorigin=""/>
+ <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+     integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+     crossorigin=""></script>
+ <style>
+    #map { height: 800px; }
+ </style>
+ <script>
+function onEachFeature(feature, layer) {
+    if (feature.properties && feature.properties.popupContent) {
+        layer.bindPopup(feature.properties.popupContent);
+    }
+}
+
+    function init_map() {
+        document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+    }
+
+  function readSingleFile(evt) {
+    var map = L.map('map').setView([51.505, -0.09], 9);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+    var f = evt.target.files[0]; 
+
+    if (f) {
+      var r = new FileReader();
+      r.onload = function(e) { 
+           var contents = e.target.result;
+           geojsonFeature = JSON.parse(contents);
+           L.geoJSON(geojsonFeature, {onEachFeature: onEachFeature}).addTo(map);
+      }
+      r.readAsText(f);
+    } else { 
+      alert("Failed to load file");
+    }
+  }
+ </script>
+</head>
+<body onload="init_map()">
+ <input type="file" id="fileinput" />
+ <div id="map"></div>
+</body>
+</html>
