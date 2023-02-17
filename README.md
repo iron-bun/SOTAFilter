@@ -1,4 +1,4 @@
-#### SOTA by Public Transport filter ####
+## SOTA by Public Transport filter ##
 
 This program is used to filter Summits on the Air locations against public transport infrastructure to find summits that are potentially accessible via public transport. The particular use case is journey planners will frequently fail to find a public transport route from you to the summit but if you can locate a nearby public transport stop and ask the planner to navigate to *that* everything works splendidly.
 
