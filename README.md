@@ -13,7 +13,7 @@ Download the stops data for the desired area:
 
 * Great Britain: https://beta-naptan.dft.gov.uk/
 * Northern Ireland: https://www.opendatani.gov.uk/dataset/translink-bus-stop-list
-* Republic of Ireland: https://data.gov.ie/en\_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee
+* Republic of Ireland: https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee
 
 Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
 
