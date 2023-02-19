@@ -47,7 +47,7 @@
             for (var j=0; j<stops.length; j++) {
                 tmp.push(L.marker(stops[j].coordinates, {icon:greenIcon}).bindPopup(stops[j].name));
             }
-            layers[features[i].name] = L.layerGroup(tmp);
+            layers[features[i].id + " " + features[i].name] = L.layerGroup(tmp);
  
             summits.push(summit);
             

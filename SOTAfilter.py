@@ -129,22 +129,27 @@ def main(args):
 
     for summit in summit_reader:
 
-        lat,lon = round(float(summit["Latitude"]) / distance_filter), round(float(summit["Longitude"]) / distance_filter)
+        lat,lon = float(summit["Latitude"]), float(summit["Longitude"])
 
-        for i in range(lat-1, lat+2):
-            for j in range(lon-1, lon+2):
+        origin_dist = hav(lat - args.user_latitude) + cos(radians(lat)) * cos(radians(args.user_latitude)) * hav(lon - args.user_longitude)
+        origin_dist = hdist(origin_dist)
+
+        if args.r != None and origin_dist > args.r:
+            continue
+
+        b_lat, b_lon = round(lat/distance_filter), round(lon/distance_filter)
+
+        for i in range(b_lat-1, b_lat+2):
+            for j in range(b_lon-1, b_lon+2):
                 if i in stops and j in stops[i]:
                     for stop in stops[i][j]:
 
-                        dist = hdist(hav(stop["lat"] - float(summit["Latitude"])) + cos(radians(stop["lat"])) * cos(radians(float(summit["Latitude"]))) * hav(stop["lon"] - float(summit["Longitude"])))
+                        dist = hdist(hav(stop["lat"] - lat) + cos(radians(stop["lat"])) * cos(radians(lat)) * hav(stop["lon"] - lon))
 
                         if dist <= walking_distance:
-                            origin_dist = (args.user_latitude - float(summit["Latitude"]))**2 + (args.user_longitude - float(summit["Longitude"]))**2
-                            origin_dist **= 0.5
-                            if args.r == None or args.r > origin_dist:
-                                if summit["SummitCode"] not in stations:
-                                    stations[summit["SummitCode"]] = {"name": summit["SummitName"], "lat":summit["Latitude"], "lon":summit["Longitude"], "origin_dist":origin_dist, "stops":[]}
-                                stations[summit["SummitCode"]]["stops"].append((dist, stop))
+                            if summit["SummitCode"] not in stations:
+                                stations[summit["SummitCode"]] = {"name": summit["SummitName"], "lat":lat, "lon":lon, "origin_dist":origin_dist, "stops":[]}
+                            stations[summit["SummitCode"]]["stops"].append((dist, stop))
     results_printers[args.f](stations)
 
 def get_arguments():
@@ -156,7 +161,7 @@ def get_arguments():
     parser.add_argument("stop_file_type", choices=["gb","ni","ie"], help="gb for Great Britian. ni for Northern Ireland. ie for Republic of Ireland")
     parser.add_argument("stop_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
-    parser.add_argument("-r", type=float, default=None, help="Results range in distance from user lat/long")
+    parser.add_argument("-r", type=float, default=None, help="Results range in distance from user lat/long in km")
     parser.add_argument("user_latitude", type=float)
     parser.add_argument("user_longitude", type=float)
     parser.add_argument("-f", choices=["json", "csv"], default="csv", help="Output format. Either csv or geoJSON")
