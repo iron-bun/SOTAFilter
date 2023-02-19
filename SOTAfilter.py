@@ -46,7 +46,7 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
             stops[lat] = dict()
         if lon not in stops[lat]:
             stops[lat][lon] = []
-        stops[lat][lon].append((stop[global_id], stop["CommonName"], float(stop["Latitude"]), float(stop["Longitude"])))
+        stops[lat][lon].append({"id":stop[global_id], "name":stop["CommonName"], "lat":float(stop["Latitude"]), "lon":float(stop["Longitude"])})
 
     return stops
 
@@ -72,7 +72,7 @@ def read_ie_stops(stop_file):
             stops[lat] = dict()
         if lon not in stops[lat]:
             stops[lat][lon] = []
-        stops[lat][lon].append((stop["properties"]["AtcoCode"], stop["properties"]["CommonName"], stop["geometry"]["coordinates"][1], stop["geometry"]["coordinates"][0]))
+        stops[lat][lon].append({"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
 
     return stops
 
@@ -95,7 +95,9 @@ def print_json_results(stations):
 
         stops = []
         for stop in stations[summit]['stops']:
-            stops.append({"name": stop[1][1], "coordinates":[stop[1][2], stop[1][3]]})
+            stop = stop[1]
+            stops.append({"name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]})
+
         tmp["stops"] = stops
 
         results.append(tmp)
@@ -116,11 +118,12 @@ def main(args):
     for summit in summit_reader:
 
         lat,lon = round(float(summit["Latitude"]) / distance_filter), round(float(summit["Longitude"]) / distance_filter)
+
         for i in range(lat-1, lat+2):
             for j in range(lon-1, lon+2):
                 if i in stops and j in stops[i]:
                     for stop in stops[i][j]:
-                        dist = (stop[2] - float(summit["Latitude"]))**2 + (stop[3] - float(summit["Longitude"]))**2
+                        dist = (stop["lat"] - float(summit["Latitude"]))**2 + (stop["lon"] - float(summit["Longitude"]))**2
                         dist **= 0.5
                         if dist <= distance_filter:
                             origin_dist = (args.user_latitude - float(summit["Latitude"]))**2 + (args.user_longitude - float(summit["Longitude"]))**2
