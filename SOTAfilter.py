@@ -103,7 +103,7 @@ def print_json_results(stations):
     results = []
     
     for summit in stations:
-        tmp = {"name": summit, "coordinates":[stations[summit]['lat'], stations[summit]['lon']]}
+        tmp = {"id": summit, "name": stations[summit]["name"], "coordinates":[stations[summit]["lat"], stations[summit]["lon"]]}
 
         stops = []
         for stop in stations[summit]['stops']:
@@ -143,7 +143,7 @@ def main(args):
                             origin_dist **= 0.5
                             if args.r == None or args.r > origin_dist:
                                 if summit["SummitCode"] not in stations:
-                                    stations[summit["SummitCode"]] = {"lat":summit["Latitude"], "lon":summit["Longitude"], "origin_dist":origin_dist, "stops":[]}
+                                    stations[summit["SummitCode"]] = {"name": summit["SummitName"], "lat":summit["Latitude"], "lon":summit["Longitude"], "origin_dist":origin_dist, "stops":[]}
                                 stations[summit["SummitCode"]]["stops"].append((dist, stop))
     results_printers[args.f](stations)
 

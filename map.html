@@ -39,8 +39,8 @@
         });
 
         for (var i=0; i<features.length; i++) {
-            console.log(features[i].name);
-            var summit = L.marker(features[i].coordinates).bindPopup(features[i].name);
+            var popupText = "<a href='https://sotl.as/summits/" + features[i].id + "' target='_new'>" + features[i].id + "</a></br>" + features[i].name;
+            var summit = L.marker(features[i].coordinates).bindPopup(popupText);
 
             stops = features[i].stops;
             var tmp = [];
