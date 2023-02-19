@@ -26,8 +26,19 @@ SOFTWARE.
 import csv
 import argparse
 import json
+import sys
+from math import cos, asin, radians
 
-distance_filter = 0.0625
+distance_filter = 0.08
+walking_distance = 5 #km
+
+def hav(theta):
+    theta = radians(theta)
+    return (1-cos(theta))/2
+
+def hdist(h):
+    earth_radius = 6371 #km
+    return 2*earth_radius*asin(h**0.5)
 
 def read_gb_ni_stops(stop_file,has_status,global_id):
 
@@ -46,6 +57,7 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
             stops[lat] = dict()
         if lon not in stops[lat]:
             stops[lat][lon] = []
+
         stops[lat][lon].append({"id":stop[global_id], "name":stop["CommonName"], "lat":float(stop["Latitude"]), "lon":float(stop["Longitude"])})
 
     return stops
@@ -123,9 +135,10 @@ def main(args):
             for j in range(lon-1, lon+2):
                 if i in stops and j in stops[i]:
                     for stop in stops[i][j]:
-                        dist = (stop["lat"] - float(summit["Latitude"]))**2 + (stop["lon"] - float(summit["Longitude"]))**2
-                        dist **= 0.5
-                        if dist <= distance_filter:
+
+                        dist = hdist(hav(stop["lat"] - float(summit["Latitude"])) + cos(radians(stop["lat"])) * cos(radians(float(summit["Latitude"]))) * hav(stop["lon"] - float(summit["Longitude"])))
+
+                        if dist <= walking_distance:
                             origin_dist = (args.user_latitude - float(summit["Latitude"]))**2 + (args.user_longitude - float(summit["Longitude"]))**2
                             origin_dist **= 0.5
                             if args.r == None or args.r > origin_dist:
