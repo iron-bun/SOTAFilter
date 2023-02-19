@@ -88,14 +88,17 @@ def print_csv_results(stations):
             print(f"{summit}, {data['lat']}, {data['lon']}, {stop[1][0]}, {stop[1][1]}, {stop[1][2]}, {stop[1][3]}")
 
 def print_json_results(stations):
-    results = {"type":"FeatureCollection", "features":[]}
+    results = []
     
     for summit in stations:
-        tmp = {"type": "Feature", "properties": {"name": summit, "popupContent":summit}, "geometry":{ "type":"Point", "coordinates":[stations[summit]['lon'], stations[summit]['lat']]}}
-        results["features"].append(tmp)
-        #for stop in stations[summit]['stops']:
-            #tmp = {"type": "Feature", "Properties": {"Name": stop[1][1]}, "geometry":{ "type":"Point", "coordinates": [stop[1][2], stop[1][3]]}}
-            #results["features"].append(tmp)
+        tmp = {"name": summit, "coordinates":[stations[summit]['lat'], stations[summit]['lon']]}
+
+        stops = []
+        for stop in stations[summit]['stops']:
+            stops.append({"name": stop[1][1], "coordinates":[stop[1][2], stop[1][3]]})
+        tmp["stops"] = stops
+
+        results.append(tmp)
 
     print(json.dumps(results))
     
