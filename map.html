@@ -16,7 +16,7 @@
     }
 
     function load_features(e) {
-        var map = L.map('map', {center: [55.910945, -3.201114], zoom:10, layers:layers});
+        var map = L.map('map', {center: [55.910945, -3.201114], zoom:10});
 
         var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -26,7 +26,6 @@
         var contents = e.target.result;
         features = JSON.parse(contents);
 
-        var layers = {};
         var summits = [];
 
         var greenIcon = new L.Icon({
@@ -47,17 +46,27 @@
             for (var j=0; j<stops.length; j++) {
                 tmp.push(L.marker(stops[j].coordinates, {icon:greenIcon}).bindPopup(stops[j].name));
             }
-            layers[features[i].id + " " + features[i].name] = L.layerGroup(tmp);
- 
+
+            var lg = L.layerGroup(tmp);
+
+            summit.on('popupopen', getOpenEvent(lg, map));
+            summit.on('popupclose', getCloseEvent(lg, map));
+
             summits.push(summit);
             
         }
 
         L.layerGroup(summits).addTo(map);
-        L.control.layers(null, layers).addTo(map);
 
     }
 
+    function getOpenEvent(lg, map) {
+        return (e) => { map.addLayer(lg); }
+    }
+
+    function getCloseEvent(lg, map) {
+        return (e) => {map.removeLayer(lg); }
+    }
 
     function readSingleFile(evt) {
 

@@ -30,4 +30,3 @@ Then open map.html in a browser and open the resulting stations.json file in the
 ### To do list: ###
 
 * Make the map auto-centre when a file is loaded.
-* Make stations appear when a summit is clicked.
