@@ -49,8 +49,7 @@
 
             var lg = L.layerGroup(tmp);
 
-            summit.on('popupopen', getOpenEvent(lg, map));
-            summit.on('popupclose', getCloseEvent(lg, map));
+            summit.on('click', getClickEvent(lg, map));
 
             summits.push(summit);
             
@@ -60,12 +59,14 @@
 
     }
 
-    function getOpenEvent(lg, map) {
-        return (e) => { map.addLayer(lg); }
-    }
-
-    function getCloseEvent(lg, map) {
-        return (e) => {map.removeLayer(lg); }
+    function getClickEvent(lg, map) {
+        return (e) => { 
+            if (map.hasLayer(lg)) {
+                map.removeLayer(lg);
+            } else {
+                map.addLayer(lg); 
+            }
+        }
     }
 
     function readSingleFile(evt) {
