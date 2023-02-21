@@ -24,7 +24,9 @@
         }).addTo(map);
 
         var contents = e.target.result;
-        features = JSON.parse(contents);
+        var results = JSON.parse(contents);
+        var origin = results.origin;
+        var features = results.features;
 
         var summits = [];
 
@@ -44,7 +46,8 @@
             stops = features[i].stops;
             var tmp = [];
             for (var j=0; j<stops.length; j++) {
-                tmp.push(L.marker(stops[j].coordinates, {icon:greenIcon}).bindPopup(stops[j].name));
+                popupText = stops[j].name + "</br><a href='https://www.google.com/maps/dir/?api=1&origin=" + stops[j].coordinates[0] + "," + stops[j].coordinates[1] + "&destination=" + origin[0] + "," + origin[1] + "&travelmode=transit' target='_new'>directions</a>";
+                tmp.push(L.marker(stops[j].coordinates, {icon:greenIcon}).bindPopup(popupText));
             }
 
             var lg = L.layerGroup(tmp);
