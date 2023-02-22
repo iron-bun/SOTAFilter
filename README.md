@@ -31,3 +31,4 @@ Then open map.html in a browser and open the resulting stations.json file in the
 ### To do list: ###
 
 * Make the map auto-centre when a file is loaded.
+* All these sources: https://www.transitwiki.org/TransitWiki/index.php/Publicly-accessible_public_transportation_data
