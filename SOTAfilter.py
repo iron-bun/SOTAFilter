@@ -158,7 +158,7 @@ def get_arguments():
                     description = "Return a list of SOTA summits near public transport sites ordered by distance to the user",
                     epilog = "Text at the bottom of help")
 
-    parser.add_argument("stop_file_type", choices=["gb","ni","ie"], help="gb for Great Britian. ni for Northern Ireland. ie for Republic of Ireland")
+    parser.add_argument("stop_file_type", choices=["gb","ni","ie"], help="gb for Great Britain. ni for Northern Ireland. ie for Republic of Ireland")
     parser.add_argument("stop_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("-r", type=float, default=None, help="Results range in distance from user lat/long in km")
