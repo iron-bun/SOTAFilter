@@ -18,6 +18,7 @@
     function load_features(e) {
         var map = L.map('map', {center: [55.910945, -3.201114], zoom:10});
 
+
         var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -39,6 +40,8 @@
           shadowSize: [41, 41]
         });
 
+        var stopsLayerGroup = L.layerGroup().addTo(map);
+
         for (var i=0; i<features.length; i++) {
             var popupText = "<a href='https://sotl.as/summits/" + features[i].id + "' target='_new'>" + features[i].id + "</a></br>" + features[i].name;
             var summit = L.marker(features[i].coordinates).bindPopup(popupText);
@@ -52,7 +55,7 @@
 
             var lg = L.layerGroup(tmp);
 
-            summit.on('click', getClickEvent(lg, map));
+            summit.on('click', getClickEvent(lg, stopsLayerGroup));
 
             summits.push(summit);
             
@@ -62,13 +65,10 @@
 
     }
 
-    function getClickEvent(lg, map) {
-        return (e) => { 
-            if (map.hasLayer(lg)) {
-                map.removeLayer(lg);
-            } else {
-                map.addLayer(lg); 
-            }
+    function getClickEvent(thisLayerGroup, stopsLayerGroup) {
+        return (e) => {
+            stopsLayerGroup.eachLayer((layer) => { layer.remove(); });
+            stopsLayerGroup.addLayer(thisLayerGroup);
         }
     }
 
