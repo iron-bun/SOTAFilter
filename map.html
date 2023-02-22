@@ -49,7 +49,7 @@
             stops = features[i].stops;
             var tmp = [];
             for (var j=0; j<stops.length; j++) {
-                popupText = stops[j].name + "</br><a href='https://www.google.com/maps/dir/?api=1&origin=" + stops[j].coordinates[0] + "," + stops[j].coordinates[1] + "&destination=" + origin[0] + "," + origin[1] + "&travelmode=transit' target='_new'>directions</a>";
+                popupText = stops[j].name + "</br><a href='https://www.google.com/maps/dir/?api=1&destination=" + stops[j].coordinates[0] + "," + stops[j].coordinates[1] + "&origin=" + origin[0] + "," + origin[1] + "&travelmode=transit' target='_new'>directions</a>";
                 tmp.push(L.marker(stops[j].coordinates, {icon:greenIcon}).bindPopup(popupText));
             }
 
