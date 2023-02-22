@@ -27,18 +27,30 @@ import csv
 import argparse
 import json
 import sys
-from math import cos, asin, radians
+from math import cos, asin, radians, degrees, atan2, pi
 
-distance_filter = 0.08
+bucket_distance = 0.08
 walking_distance = 5 #km
 
 def hav(theta):
     theta = radians(theta)
     return (1-cos(theta))/2
 
-def hdist(h):
+def hdist(lat1, lon1, lat2, lon2):
+
     earth_radius = 6371 #km
+    dy = lat1 - lat2
+    dx = lon1 - lon2
+    
+    h = hav(dy) + cos(radians(lat1)) * cos(radians(lat2)) * hav(dx)
     return 2*earth_radius*asin(h**0.5)
+
+def hangle(lat1, lon1, lat2, lon2):
+    dy = lat1 - lat2
+    dx = lon1 - lon2
+
+    angle = atan2(dy, cos(pi/180*lat1)*dx)
+    return degrees(angle)
 
 def read_gb_ni_stops(stop_file,has_status,global_id):
 
@@ -51,8 +63,8 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
     
         lat = float(stop["Latitude"])
         lon = float(stop["Longitude"])
-        lat = round(lat / distance_filter)
-        lon = round(lon / distance_filter)
+        lat = round(lat / bucket_distance)
+        lon = round(lon / bucket_distance)
         if lat not in stops:
             stops[lat] = dict()
         if lon not in stops[lat]:
@@ -77,8 +89,8 @@ def read_ie_stops(stop_file):
         if "isActive" in stop["properties"] and not stop["properties"]["isActive"]:
             continue
 
-        lat = round(stop["geometry"]["coordinates"][1] / distance_filter)
-        lon = round(stop["geometry"]["coordinates"][0] / distance_filter)
+        lat = round(stop["geometry"]["coordinates"][1] / bucket_distance)
+        lon = round(stop["geometry"]["coordinates"][0] / bucket_distance)
 
         if lat not in stops:
             stops[lat] = dict()
@@ -101,17 +113,26 @@ def print_csv_results(stations, args):
 
 def print_json_results(stations, args):
     results = []
-    
+ 
     for summit in stations:
-        tmp = {"id": summit, "name": stations[summit]["name"], "coordinates":[stations[summit]["lat"], stations[summit]["lon"]]}
+        tmp = {"id": summit, "name": stations[summit]["name"], "coordinates":[stations[summit]["lat"], stations[summit]["lon"]], "stops":[]}
 
-        stops = []
-        for stop in stations[summit]['stops']:
+        angles = {}
+        for stop in stations[summit]["stops"]:
+            dist = stop[0]
             stop = stop[1]
-            stops.append({"name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]})
 
-        tmp["stops"] = stops
+            angle = hangle(stations[summit]["lat"], stations[summit]["lon"], stop["lat"], stop["lon"])/10
+            angle = round(angle)
 
+            if angle not in angles:
+                angles[angle] = []
+
+            angles[angle].append((dist, {"name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]}))
+
+        for k, v in angles.items():
+            v = sorted(v, key=lambda x:x[0])
+            tmp["stops"].append(v[0][1])
         results.append(tmp)
 
     print(json.dumps({"origin":[args.user_latitude, args.user_longitude], "features":results}))
@@ -131,20 +152,19 @@ def main(args):
 
         lat,lon = float(summit["Latitude"]), float(summit["Longitude"])
 
-        origin_dist = hav(lat - args.user_latitude) + cos(radians(lat)) * cos(radians(args.user_latitude)) * hav(lon - args.user_longitude)
-        origin_dist = hdist(origin_dist)
+        origin_dist = hdist(lat, lon, args.user_latitude, args.user_longitude)
 
         if args.r != None and origin_dist > args.r:
             continue
 
-        b_lat, b_lon = round(lat/distance_filter), round(lon/distance_filter)
+        b_lat, b_lon = round(lat/bucket_distance), round(lon/bucket_distance)
 
         for i in range(b_lat-1, b_lat+2):
             for j in range(b_lon-1, b_lon+2):
                 if i in stops and j in stops[i]:
                     for stop in stops[i][j]:
 
-                        dist = hdist(hav(stop["lat"] - lat) + cos(radians(stop["lat"])) * cos(radians(lat)) * hav(stop["lon"] - lon))
+                        dist = hdist(lat, lon, stop["lat"], stop["lon"])
 
                         if dist <= walking_distance:
                             if summit["SummitCode"] not in stations:
