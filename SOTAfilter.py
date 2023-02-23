@@ -27,6 +27,7 @@ import csv
 import argparse
 import json
 import sys
+from collections import defaultdict
 from math import cos, asin, radians, degrees, atan2, pi
 
 bucket_distance = 0.08
@@ -54,7 +55,7 @@ def hangle(lat1, lon1, lat2, lon2):
 
 def read_gb_ni_stops(stop_file,has_status,global_id):
 
-    stops = dict()
+    stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
 
     for stop in stop_reader:
@@ -65,12 +66,8 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
         lon = float(stop["Longitude"])
         lat = round(lat / bucket_distance)
         lon = round(lon / bucket_distance)
-        if lat not in stops:
-            stops[lat] = dict()
-        if lon not in stops[lat]:
-            stops[lat][lon] = []
 
-        stops[lat][lon].append({"id":stop[global_id], "name":stop["CommonName"], "lat":float(stop["Latitude"]), "lon":float(stop["Longitude"])})
+        stops[lat, lon].append({"id":stop[global_id], "name":stop["CommonName"], "lat":float(stop["Latitude"]), "lon":float(stop["Longitude"])})
 
     return stops
 
@@ -83,7 +80,7 @@ def read_ni_stops(stop_file):
 def read_ie_stops(stop_file):
 
     stop_reader = json.load(stop_file)
-    stops = dict()
+    stops = defaultdict(list)
 
     for stop in stop_reader["features"]:
         if "isActive" in stop["properties"] and not stop["properties"]["isActive"]:
@@ -92,11 +89,7 @@ def read_ie_stops(stop_file):
         lat = round(stop["geometry"]["coordinates"][1] / bucket_distance)
         lon = round(stop["geometry"]["coordinates"][0] / bucket_distance)
 
-        if lat not in stops:
-            stops[lat] = dict()
-        if lon not in stops[lat]:
-            stops[lat][lon] = []
-        stops[lat][lon].append({"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
+        stops[lat, lon].append({"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
 
     return stops
 
@@ -117,16 +110,13 @@ def print_json_results(stations, args):
     for summit in stations:
         tmp = {"id": summit, "name": stations[summit]["name"], "coordinates":[stations[summit]["lat"], stations[summit]["lon"]], "stops":[]}
 
-        angles = {}
+        angles = defaultdict(list)
         for stop in stations[summit]["stops"]:
             dist = stop[0]
             stop = stop[1]
 
             angle = hangle(stations[summit]["lat"], stations[summit]["lon"], stop["lat"], stop["lon"])/10
             angle = round(angle)
-
-            if angle not in angles:
-                angles[angle] = []
 
             angles[angle].append((dist, {"name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]}))
 
@@ -161,8 +151,8 @@ def main(args):
 
         for i in range(b_lat-1, b_lat+2):
             for j in range(b_lon-1, b_lon+2):
-                if i in stops and j in stops[i]:
-                    for stop in stops[i][j]:
+                if (i, j) in stops:
+                    for stop in stops[i, j]:
 
                         dist = hdist(lat, lon, stop["lat"], stop["lon"])
 
