@@ -12,19 +12,21 @@
  <script>
 
     function init_map() {
-        document.getElementById('fileinput').addEventListener('change', readSingleFile, false);
+        var client = new XMLHttpRequest();
+        client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_features(client.responseText); };
+        client.open('GET', './Edinburgh.json');
+        client.send();
     }
 
-    function load_features(e) {
-        var map = L.map('map', {center: [55.910945, -3.201114], zoom:10});
+    function load_features(contents) {
 
+        var map = L.map('map', {center: [55.910945, -3.201114], zoom:10});
 
         var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        var contents = e.target.result;
         var results = JSON.parse(contents);
         var origin = results.origin;
         var features = results.features;
@@ -89,7 +91,6 @@
  </script>
 </head>
 <body onload="init_map()">
- <input type="file" id="fileinput" />
  <div id="map"></div>
 </body>
 </html>
