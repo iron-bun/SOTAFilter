@@ -125,7 +125,7 @@ def print_json_results(stations, args):
             tmp["stops"].append(v[0][1])
         results.append(tmp)
 
-    print(json.dumps({"origin":[args.user_latitude, args.user_longitude], "features":results}))
+    print(json.dumps(results))
     
 results_printers = {'csv':print_csv_results, 'json':print_json_results}
 
@@ -139,13 +139,12 @@ def main(args):
     stations = dict()
 
     for summit in summit_reader:
+        summit_code = summit["SummitCode"]
+        region_code = summit_code[:summit_code.find("/")]
+        if region_code != args.region:
+            continue
 
         lat,lon = float(summit["Latitude"]), float(summit["Longitude"])
-
-        origin_dist = hdist(lat, lon, args.user_latitude, args.user_longitude)
-
-        if args.r != None and origin_dist > args.r:
-            continue
 
         b_lat, b_lon = round(lat/bucket_distance), round(lon/bucket_distance)
 
@@ -158,7 +157,7 @@ def main(args):
 
                         if dist <= walking_distance:
                             if summit["SummitCode"] not in stations:
-                                stations[summit["SummitCode"]] = {"name": summit["SummitName"], "lat":lat, "lon":lon, "origin_dist":origin_dist, "stops":[]}
+                                stations[summit["SummitCode"]] = {"name": summit["SummitName"], "lat":lat, "lon":lon, "stops":[]}
                             stations[summit["SummitCode"]]["stops"].append((dist, stop))
     results_printers[args.f](stations, args)
 
@@ -171,9 +170,7 @@ def get_arguments():
     parser.add_argument("stop_file_type", choices=["gb","ni","ie"], help="gb for Great Britain. ni for Northern Ireland. ie for Republic of Ireland")
     parser.add_argument("stop_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
-    parser.add_argument("-r", type=float, default=None, help="Results range in distance from user lat/long in km")
-    parser.add_argument("user_latitude", type=float)
-    parser.add_argument("user_longitude", type=float)
+    parser.add_argument("region")
     parser.add_argument("-f", choices=["json", "csv"], default="csv", help="Output format. Either csv or geoJSON")
 
     return parser.parse_args()
