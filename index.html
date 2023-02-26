@@ -13,6 +13,7 @@
 
     let global_map;
     let summits_layer = L.layerGroup();
+    let summits = {}
     let stops_layer = L.layerGroup();
 
     var greenIcon = new L.Icon({
@@ -73,6 +74,7 @@
 
         global_summits.eachLayer((layer) => {layer.remove();});
         global_stops.eachLayer((layer) => {layer.remove();});
+        summits = {}
 
         var features = JSON.parse(contents);
 
@@ -101,6 +103,7 @@
             summit.on('click', getClickEvent(lg));
 
             global_summits.addLayer(summit);
+            summits[features[i].id] = summit;
             
         }
 
@@ -130,12 +133,27 @@
       alert("Failed to load file");
     }
   }
+
+  function highlight_summit() {
+      var id = document.getElementById("summit_ref").value;
+      if (id in summits) {
+          summits[id].fire('click');
+          global_map.setView(summits[id]._latlng, 10);
+      }
+  }
+
+  function check_search(e) {
+    if (e && e.keyCode == 13) {
+        highlight_summit()
+    }
+  }
  </script>
 </head>
 <body onload="init_map()">
  Select Region: <select id="region_selector" disabled="true" onchange="get_features()">
    <option value='null'>--</option>
  </select>
+ Search for summit by ref <input id="summit_ref" onKeyPress="check_search(event)"/><button onclick="highlight_summit()">Go</button>
  <div id="map"></div>
 </body>
 </html>
