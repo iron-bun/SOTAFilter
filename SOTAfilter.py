@@ -33,7 +33,9 @@ import logging
 
 bucket_distance = 0.08
 walking_distance = 5 #km
+
 log = logging.getLogger(__name__)
+logging.basicConfig()
 
 def hav(theta):
     theta = radians(theta)
@@ -180,10 +182,9 @@ def get_arguments():
     parser.add_argument("-f", choices=["json", "csv"], default="csv", help="Output format. Either csv or geoJSON")
     parser.add_argument("-v", default=0, action="count", help="Print debug statements. Omit for no debug. -v for info. -vv for debug")
 
-    args =  parser.parse_args()
+    args = parser.parse_args()
 
-    logging.basicConfig()
-    logging.getLogger().setLevel(logging.WARN - 10 * args.v)
+    log.setLevel(logging.WARNING - 10 * args.v)
 
     return args
 
