@@ -30,6 +30,7 @@ import sys
 from collections import defaultdict
 from math import cos, asin, radians, degrees, atan2, pi
 import logging
+import bng_latlon
 
 bucket_distance = 0.08
 walking_distance = 5 #km
@@ -66,16 +67,18 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
         if has_status and stop["Status"] == "inactive":
             log.debug(f"Stop {stop['CommonName']} ({stop[global_id]}) omitted because it is inactive")
             continue
-        elif stop["Latitude"] == "" or stop["Longitude"] == "":
-            log.debug(f"Stop {stop['CommonName']} ({stop[global_id]}) omitted because it has no lat/lon")
-            continue
-    
-        lat = float(stop["Latitude"])
-        lon = float(stop["Longitude"])
-        lat = round(lat / bucket_distance)
-        lon = round(lon / bucket_distance)
 
-        stops[lat, lon].append({"id":stop[global_id], "name":stop["CommonName"], "lat":float(stop["Latitude"]), "lon":float(stop["Longitude"])})
+        if stop["Latitude"] == "" or stop["Longitude"] == "":
+            lat,lon = bng_latlon.OSGB36toWGS84(int(stop['Easting']), int(stop['Northing']))
+            log.debug(f"Converted {stop['CommonName']} ({stop[global_id]}) from grid NT {stop['Northing']} {stop['Easting']} to {lat},{lon}")
+        else:
+            lat = float(stop["Latitude"])
+            lon = float(stop["Longitude"])
+
+        b_lat = round(lat / bucket_distance)
+        b_lon = round(lon / bucket_distance)
+
+        stops[b_lat, b_lon].append({"id":stop[global_id], "name":stop["CommonName"], "lat":lat, "lon":lon})
 
     return stops
 
