@@ -135,7 +135,7 @@
   }
 
   function highlight_summit() {
-      var id = document.getElementById("summit_ref").value;
+      var id = document.getElementById("summit_ref").value.toUpperCase();
       if (id in summits) {
           summits[id].fire('click');
           global_map.setView(summits[id]._latlng, 10);
