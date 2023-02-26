@@ -29,9 +29,11 @@ import json
 import sys
 from collections import defaultdict
 from math import cos, asin, radians, degrees, atan2, pi
+import logging
 
 bucket_distance = 0.08
 walking_distance = 5 #km
+log = logging.getLogger(__name__)
 
 def hav(theta):
     theta = radians(theta)
@@ -59,7 +61,11 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
 
     for stop in stop_reader:
-        if has_status and (stop["Latitude"] == "" or stop["Status"] == "inactive"):
+        if has_status and stop["Status"] == "inactive":
+            log.debug(f"Stop {stop['CommonName']} ({stop[global_id]}) omitted because it is inactive")
+            continue
+        elif stop["Latitude"] == "" or stop["Longitude"] == "":
+            log.debug(f"Stop {stop['CommonName']} ({stop[global_id]}) omitted because it has no lat/lon")
             continue
     
         lat = float(stop["Latitude"])
@@ -172,8 +178,14 @@ def get_arguments():
     parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("region")
     parser.add_argument("-f", choices=["json", "csv"], default="csv", help="Output format. Either csv or geoJSON")
+    parser.add_argument("-v", default=0, action="count", help="Print debug statements. Omit for no debug. -v for info. -vv for debug")
 
-    return parser.parse_args()
+    args =  parser.parse_args()
+
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.WARN - 10 * args.v)
+
+    return args
 
 
 if __name__ == "__main__":
