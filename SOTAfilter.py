@@ -109,11 +109,10 @@ stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops}
 def print_csv_results(stations, args):
 
     print("SummitCode, SummitLatitude, SummitLongitude, StationCode, StationName, StationLatitude, StationLongitude")
-    stations = sorted(stations.items(), key=lambda x:x[1]["origin_dist"])
-    for summit, data in stations:
+    for summit, data in stations.items():
         stops = sorted(data["stops"], key=lambda x:x[0])
         for stop in stops:
-            print(f"{summit}, {data['lat']}, {data['lon']}, {stop[1][0]}, {stop[1][1]}, {stop[1][2]}, {stop[1][3]}")
+            print(f"{summit}, {data['lat']}, {data['lon']}, {stop[1]['id']}, {stop[1]['name']}, {stop[1]['lat']}, {stop[1]['lon']}")
 
 def print_json_results(stations, args):
     results = []
