@@ -7,7 +7,23 @@
      integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
      crossorigin=""></script>
  <style>
-    #map { height: 800px; }
+    #map {
+        height: 90%;
+    }
+    #faq_button { float: right; }
+    #faq {
+        position: absolute;
+        top: 50px;
+        right: 100px;
+        z-index: 1000;
+        display: none;
+        padding: 5px;
+        width: 400px;
+        max-height:80%;
+        overflow:auto;
+        border:1px solid black;
+        background:white;
+    }
  </style>
  <script>
 
@@ -147,6 +163,16 @@
         highlight_summit()
     }
   }
+
+  function show_hide_faq() {
+    var faq = document.getElementById("faq");
+    if (!faq.style.display || faq.style.display == "none") {
+        faq.style.display = "block";
+    } else {
+        faq.style.display = "none";
+    }
+  }
+
  </script>
 </head>
 <body onload="init_map()">
@@ -154,6 +180,19 @@
    <option value='null'>--</option>
  </select>
  Search for summit by ref <input id="summit_ref" onKeyPress="check_search(event)"/><button onclick="highlight_summit()">Go</button>
+ <div id="faq_button" onclick="show_hide_faq()">FAQ</div>
+ <div id="faq">
+   <h1>What are you trying to do here?</h1>
+   <p>I would like to go to <a href="https://www.sota.org.uk/">SOTA</a> summits with my amateur radio gear but I don't have a car so I have to take public transport. This map shows SOTA summits within 5km of a public transport stop, which includes (depending on the data availability) bus and train stops and ferry terminals.</p>
+   <h1>Why not use Google maps or something?</h1>
+   <p>Itinerary services are great if you know where you want to go and it's a short walk once you get there. Looking for routes to summits often returns no results even when there are public transport stops within a reasonable hike. Scouring the map for the nearest suitable bus stop made me very thoughtful about automation. This site starts by filtering out summits that are definitely out of reach, then links you to directions to the transit stop which usually gives good results.</p>
+   <h1>I found a stop that nothing seems to go to?</h1>
+   <p>The existence of a bus stop does not imply the existence of a bus and there are a lot of orphaned stops in the world. You should work out and verify your travel plans using a different service. Scheduling is a hard problem and outside the scope of this site.</p>
+   <h1>Why is my summit missing? I know buses go there.</h1>
+   <p>I can't find the stop in the publically avaiable data. Some bus services will stop or collect on demand without an official stop in the area which is great for flexibility, but incorporating that would need a <em>lot</em> more data and processing. Some summits are going to be unfairly dropped.</p>
+   <h1>Why only 5km to a transit stop? Can I change it?</h1>
+   <p>5km was a figure I plucked from the air based on my own ability to hike over unfamiliar ground for an hour or two. It assumes that you won't be travelling in a straight line and also that there will be a significant amount of ascent and descent. If you can do better, that's fantastic. Wherever I draw the line will be unsuitable for some people.</p>
+ </div>
  <div id="map"></div>
 </body>
 </html>
