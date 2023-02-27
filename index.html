@@ -135,21 +135,6 @@
         }
     }
 
-    function readSingleFile(evt) {
-
-        var f = evt.target.files[0]; 
-
-    if (f) {
-
-      var r = new FileReader();
-      r.onload = load_features;
-      r.readAsText(f);
-
-    } else { 
-      alert("Failed to load file");
-    }
-  }
-
   function highlight_summit() {
       var id = document.getElementById("summit_ref").value.toUpperCase();
       if (id in summits) {
