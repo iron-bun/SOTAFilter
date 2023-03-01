@@ -6,6 +6,9 @@
  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
      integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
      crossorigin=""></script>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc=" crossorigin="anonymous">
+ <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" integrity="sha256-YSWCMtmNZNwqex4CEw1nQhvFub2lmU7vcCKP+XVwwXA=" crossorigin="anonymous">
+ <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin="anonymous"></script>
  <style>
     #map {
         height: 90%;
@@ -28,9 +31,9 @@
  <script>
 
     let global_map;
-    let summits_layer = L.layerGroup();
+    let global_summits;
     let summits = {}
-    let stops_layer = L.layerGroup();
+    let global_stops;
 
     var greenIcon = new L.Icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
@@ -49,7 +52,7 @@
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(global_map);
 
-        global_summits = L.layerGroup().addTo(global_map);
+        global_summits = L.markerClusterGroup().addTo(global_map);
         global_stops = L.layerGroup().addTo(global_map);
 
         var client = new XMLHttpRequest();
@@ -117,6 +120,7 @@
             var lg = L.layerGroup(tmp);
 
             summit.on('click', getClickEvent(lg));
+            summit.on('remove', getRemoveEvent(lg));
 
             global_summits.addLayer(summit);
             summits[features[i].id] = summit;
@@ -126,6 +130,12 @@
         if (min_lat != null && min_lon != null)
             global_map.fitBounds([[min_lat, min_lon], [max_lat,max_lon]]);
 
+    }
+
+    function getRemoveEvent(thisLayerGroup) {
+        return (e) => {
+            global_stops.removeLayer(thisLayerGroup);
+        }
     }
 
     function getClickEvent(thisLayerGroup) {
@@ -138,8 +148,8 @@
   function highlight_summit() {
       var id = document.getElementById("summit_ref").value.toUpperCase();
       if (id in summits) {
+          global_summits.zoomToShowLayer(summits[id]);
           summits[id].fire('click');
-          global_map.setView(summits[id]._latlng, 10);
       }
   }
 
