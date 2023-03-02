@@ -86,7 +86,7 @@
 
             var lg = L.layerGroup(tmp);
 
-            summit.on('click', getClickEvent(lg));
+            summit.on('click', getClickEvent(features[i].id, lg));
             summit.on('remove', getRemoveEvent(lg));
 
             global_summits.addLayer(summit);
@@ -104,12 +104,47 @@
         }
     }
 
-    function getClickEvent(thisLayerGroup) {
+    function getClickEvent(summit_id, thisLayerGroup) {
         return (e) => {
             global_stops.eachLayer((layer) => { layer.remove(); });
             global_stops.addLayer(thisLayerGroup);
+            get_routes(summit_id, thisLayerGroup);
         }
     }
+
+    var cached_routes = {};
+    function get_routes(summit_id, thisLayerGroup) {
+
+        if (summit_id in cached_routes) { 
+            display_routes(summit_id, thisLayerGroup);
+
+        } else {
+            var client = new XMLHttpRequest();
+
+            client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_routes(summit_id, thisLayerGroup, client.responseText); };
+            client.open('GET', `https://api-db.sota.org.uk/smp/gpx/summit/${summit_id}`);
+            client.send();
+        }
+    }
+
+    function load_routes(summit_id, thisLayerGroup, contents) {
+        cached_routes[summit_id] = [];
+
+        var routes = JSON.parse(contents);
+        for (var i = 0; i < routes.length; i++) {
+            route = [];
+            for (var j = 0; j < routes[i].points.length; j++) {
+                route.push([routes[i].points[j].latitude, routes[i].points[j].longitude]);
+            }
+            cached_routes[summit_id].push(route);
+        }
+        display_routes(summit_id, thisLayerGroup);
+    }
+
+    function display_routes(summit_id, thisLayerGroup) {
+        cached_routes[summit_id].forEach((route) => { L.polyline(route, {color: 'red'}).addTo(thisLayerGroup); });
+    }
+
 
   function highlight_summit() {
       var id = document.getElementById("summit_ref").value.toUpperCase();
