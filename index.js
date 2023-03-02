@@ -36,14 +36,15 @@
         var region_selector = document.getElementById('region_selector');
         region_selector.disabled = false;
 
-        for (var i=0; i<results.length; i++) {
+        results.forEach((result) => {
             var opt = document.createElement('option');
 
-            opt.value = results[i].region;
-            opt.innerHTML = results[i].description;
+            opt.value = result.region;
+            opt.innerHTML = result.description;
             region_selector.appendChild(opt);
-        }
+        });
     }
+
     function get_features() {
 
         var region_selector = document.getElementById('region_selector');
@@ -59,48 +60,37 @@
     function load_features(contents) {
 
         global_summits.clearLayers();
-        global_stops.clearLayers();
         summits = {}
 
         var features = JSON.parse(contents);
 
-        var min_lat = null, max_lat = null, min_lon = null, max_lon = null;
+        features.forEach( (feature) => {
 
-        for (var i=0; i<features.length; i++) {
+            var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name;
+            var summit = L.marker(feature.coordinates).bindPopup(popupText);
 
-            var lat = features[i].coordinates[0], lon = features[i].coordinates[1];
-            if (min_lat == null || min_lat > lat) { min_lat = lat; }
-            if (max_lat == null || max_lat < lat) { max_lat = lat; }
-            if (min_lon == null || min_lon > lon) { min_lon = lon; }
-            if (max_lon == null || max_lon < lat) { max_lon = lon; }
+            var lg = L.layerGroup();
+            feature.stops.forEach( (stop) => {
+                popupText = stop.name + "</br><a href='https://www.google.com/maps/dir/?api=1&destination=" + stop.coordinates[0] + "," + stop.coordinates[1] + "&travelmode=transit' target='_new'>directions</a>";
+                L.marker(stop.coordinates, {icon:greenIcon}).bindPopup(popupText).addTo(lg);
+            });
 
-            var popupText = "<a href='https://sotl.as/summits/" + features[i].id + "' target='_new'>" + features[i].id + "</a></br>" + features[i].name;
-            var summit = L.marker(features[i].coordinates).bindPopup(popupText);
 
-            stops = features[i].stops;
-            var tmp = [];
-            for (var j=0; j<stops.length; j++) {
-                popupText = stops[j].name + "</br><a href='https://www.google.com/maps/dir/?api=1&destination=" + stops[j].coordinates[0] + "," + stops[j].coordinates[1] + "&travelmode=transit' target='_new'>directions</a>";
-                tmp.push(L.marker(stops[j].coordinates, {icon:greenIcon}).bindPopup(popupText));
-            }
-
-            var lg = L.layerGroup(tmp);
-
-            summit.on('click', getClickEvent(features[i].id, lg));
+            summit.on('click', getClickEvent(feature.id, lg));
             summit.on('remove', getRemoveEvent(lg));
 
             global_summits.addLayer(summit);
-            summits[features[i].id] = summit;
+            summits[feature.id] = summit;
             
-        }
+        });
 
-        if (min_lat != null && min_lon != null)
-            global_map.fitBounds([[min_lat, min_lon], [max_lat,max_lon]]);
+        global_map.fitBounds(global_summits.getBounds());
 
     }
+
     function getRemoveEvent(thisLayerGroup) {
         return (e) => {
-            global_stops.removeLayer(thisLayerGroup);
+            thisLayerGroup.remove();
         }
     }
 
@@ -131,13 +121,13 @@
         cached_routes[summit_id] = [];
 
         var routes = JSON.parse(contents);
-        for (var i = 0; i < routes.length; i++) {
-            route = [];
-            for (var j = 0; j < routes[i].points.length; j++) {
-                route.push([routes[i].points[j].latitude, routes[i].points[j].longitude]);
-            }
-            cached_routes[summit_id].push(route);
-        }
+        routes.forEach( (route) => {
+            tmp = [];
+            route.points.forEach( (point) => {
+                tmp.push([point.latitude, point.longitude]);
+            });
+            cached_routes[summit_id].push(tmp);
+        });
         display_routes(summit_id, thisLayerGroup);
     }
 
