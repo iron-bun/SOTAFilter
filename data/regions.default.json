@@ -1,0 +1,11 @@
+[
+  {"region": "EI", "description": "EI - Ireland"},
+  {"region": "G", "description": "G - England"},
+  {"region": "GD", "description": "GD - Isle of Man"},
+  {"region": "GI", "description": "GI - Northern Ireland"},
+  {"region": "GJ", "description": "GJ - Jersey"},
+  {"region": "GM", "description": "GM - Scotland"},
+  {"region": "GU", "description": "GU - Guernsey"},
+  {"region": "GW", "description": "GW - Wales"},
+  {"region": "LA", "description": "LA - Norway"}
+]

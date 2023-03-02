@@ -57,7 +57,7 @@
 
         var client = new XMLHttpRequest();
         client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_regions(client.responseText); };
-        client.open('GET', './regions.json');
+        client.open('GET', './data/regions.json');
         client.send();
     }
 
@@ -85,7 +85,7 @@
         var client = new XMLHttpRequest();
 
         client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_features(client.responseText); };
-        client.open('GET', `./${region_selector.value}.json`);
+        client.open('GET', `./data/${region_selector.value}.json`);
         client.send();
     }
 
@@ -188,9 +188,7 @@
    <h1>Why only 5km to a transit stop? Can I change it?</h1>
    <p>5km was a figure I plucked from the air based on my own ability to hike over unfamiliar ground for an hour or two. It assumes that you won't be travelling in a straight line and also that there will be a significant amount of ascent and descent. If you can do better, that's fantastic. Wherever I draw the line will be unsuitable for some people.</p>
    <h1>Where did you get all the data?</h1>
-   <p>The summits are available on <a href="https://www.sotadata.org.uk/">https://www.sotadata.org.uk/</a> under the 'list of all summits' page. GB stop data is available at <a href="https://beta-naptan.dft.gov.uk/">https://beta-naptan.dft.gov.uk/</a>. Northern Ireland data is available at <a href="https://www.opendatani.gov.uk/dataset/translink-bus-stop-list">https://www.opendatani.gov.uk/dataset/translink-bus-stop-list</a>. Irish data is available at <a href="https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee">https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee</a>.</p>
-   <h1>Can I fork this code?</h1>
-   <p>Absolutely. <a href="https://github.com/iron-bun/SOTAFilter">https://github.com/iron-bun/SOTAFilter</a></p>
+   <p>Links to the data, attribution and licenses can be found on the github for this project at <a href="https://github.com/iron-bun/SOTAFilter">https://github.com/iron-bun/SOTAFilter</a>. Bug reports, suggestions and patches are welcome.</p>
  </div>
  <div id="map"></div>
 </body>

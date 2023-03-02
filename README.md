@@ -8,28 +8,25 @@ will frequently fail to find a public transport route from you to the summit, bu
 
 ### Usage ###
 
-Dependencies are csv, json and argparse.
-
 Download the stops data for the desired area:
 
-* Great Britain: https://beta-naptan.dft.gov.uk/
-* Northern Ireland: https://www.opendatani.gov.uk/dataset/translink-bus-stop-list
-* Republic of Ireland: https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee
-* Norway: https://developer.entur.org/stops-and-timetable-data
+* Great Britain: https://beta-naptan.dft.gov.uk/ licensed under the UK Open Government License
+* Northern Ireland: https://www.opendatani.gov.uk/dataset/translink-bus-stop-list licensed under the UK Open Government Licence
+* Republic of Ireland: https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee with an unspecified license
+* Norway: https://developer.entur.org/stops-and-timetable-data licensed under the NLOD 2.0 (https://data.norge.no/nlod/en/2.0)
 
 Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
 
 The program can produce a CSV file from an origin latitude and longitude (these are presently mandatory) and orders the list of summits by distance to that origin location, and then distance to stations in order of distance to that summit. For this mode run the script with:
 
-`SOTAfilter.py [-h] [-r R] -f csv {gb,ni,ie} stop_file summit_file user_latitude user_longitude`
+`SOTAfilter.py -f csv [-v] {gb,ni,ie,no} stop_file summit_file region`
 
-There is also a map.html file which uses leaflet (https://leafletjs.com/) to display results on an interactive map. To generate the JSON for the map, run the script as follows:
+There is also a index.html file which uses leaflet (https://leafletjs.com/) to display results on an interactive map. To generate the JSON for the map, run the script as follows:
 
-`SOTAfilter.py -r 100 -f json {gb,ni,ie} stop_file summit_file user_latitude user_longitude > stations.json`
+`SOTAfilter.py -f json {gb,ni,ie,no} stop_file summit_file region > region.json`
 
-Then open map.html in a browser and open the resulting stations.json file in the file browser. Navigate the map to your location. The -r argument is the range in which summits should be displayed in degrees. Too many results can make the map run slowly.
+Index.html will perform an AJAX request to load in the regions.json file, and from there allow the user to load in region specific data. Clicking on a summit will expand the associated stops.
 
 ### To do list: ###
 
-* Make the map auto-centre when a file is loaded.
 * All these sources: https://www.transitwiki.org/TransitWiki/index.php/Publicly-accessible_public_transportation_data

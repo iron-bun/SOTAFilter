@@ -191,7 +191,7 @@ def main(args):
 
 def get_arguments():
     parser = argparse.ArgumentParser(
-                    prog = "SOTAfilter",
+                    prog = "SOTAfilter.py",
                     description = "Return a list of SOTA summits near public transport sites ordered by distance to the user",
                     epilog = "Text at the bottom of help")
 
