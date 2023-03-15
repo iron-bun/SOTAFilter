@@ -1,5 +1,7 @@
 <html>
 <head>
+ <meta property="og:title" content="HamHiker Transit" />
+ <meta property="og:description" content="Find SOTA summits with nearby transit stops" />
  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
      crossorigin=""/>
@@ -34,7 +36,7 @@
  Select Region: <select id="region_selector" disabled="true" onchange="get_features()">
    <option value='null'>--</option>
  </select>
- Search for summit by ref <input id="summit_ref" onKeyPress="check_search(event)"/><button onclick="highlight_summit()">Go</button>
+ Search for summit by ref <input id="summit_ref" onKeyPress="check_search(event)"/><button onclick="go_search()">Go</button>
  <div id="faq_button" onclick="show_hide_faq()">FAQ</div>
  <div id="faq">
    <h1>What are you trying to do here?</h1>

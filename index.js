@@ -13,7 +13,7 @@
     });
 
     function init_map() {
-        global_map = L.map('map', {center: [55.910945, -3.201114], zoom:10});
+        global_map = L.map('map', {center: [56.05331379149255, -9.889521032420252], zoom:10});
 
         var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -43,21 +43,28 @@
             opt.innerHTML = result.description;
             region_selector.appendChild(opt);
         });
+
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const summit_ref = urlParams.get('summit');
+        if (summit_ref != null)
+            highlight_summit(summit_ref);
     }
 
-    function get_features() {
+    function get_features(summit_ref=null) {
 
         var region_selector = document.getElementById('region_selector');
         if (region_selector.value == 'null') { return; }
 
         var client = new XMLHttpRequest();
 
-        client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_features(client.responseText); };
+        client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_features(client.responseText, summit_ref); };
         client.open('GET', `./data/${region_selector.value}.json`);
         client.send();
     }
 
-    function load_features(contents) {
+    function load_features(contents, summit_ref) {
 
         global_summits.clearLayers();
         summits = {}
@@ -84,7 +91,10 @@
             
         });
 
-        global_map.fitBounds(global_summits.getBounds());
+        if (summit_ref in summits)
+            highlight_summit(summit_ref);
+        else
+            global_map.fitBounds(global_summits.getBounds());
 
     }
 
@@ -136,18 +146,31 @@
     }
 
 
-  function highlight_summit() {
-      var id = document.getElementById("summit_ref").value.toUpperCase();
-      if (id in summits) {
-          global_summits.zoomToShowLayer(summits[id]);
-          summits[id].fire('click');
+  function highlight_summit(summit_ref) {
+
+      summit_ref = summit_ref.toUpperCase();
+      let search_region = summit_ref.split('/')[0];
+      let region_selector = document.getElementById('region_selector');
+
+      if (search_region != region_selector.value) {
+          region_selector.value = search_region;
+          get_features(summit_ref);
+      }
+
+      else if (summit_ref in summits) {
+          global_summits.zoomToShowLayer(summits[summit_ref]);
+          summits[summit_ref].fire('click');
       }
   }
 
   function check_search(e) {
     if (e && e.keyCode == 13) {
-        highlight_summit()
+        highlight_summit(e.target.value);
     }
+  }
+  function go_search() {
+    let summit_ref = document.getElementById('summit_ref').value;
+    highlight_summit(summit_ref);
   }
 
   function show_hide_faq() {
