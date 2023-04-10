@@ -31,6 +31,7 @@ from collections import defaultdict
 from math import cos, asin, radians, degrees, atan2, pi
 import logging
 import bng_latlon
+from datetime import date
 
 bucket_distance = 0.08
 walking_distance = 5 #km
@@ -170,6 +171,11 @@ def main(args):
         summit_code = summit["SummitCode"]
         region_code = summit_code[:summit_code.find("/")]
         if region_code != args.region:
+            continue
+
+        day, month, year = list(map(int, summit["ValidTo"].split("/")))
+        if date(year, month, day) < date.today():
+            log.info(f"discarding {summit['SummitCode']} as no longer valid ({summit['ValidTo']})")
             continue
 
         lat,lon = float(summit["Latitude"]), float(summit["Longitude"])
