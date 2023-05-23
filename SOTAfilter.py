@@ -105,7 +105,7 @@ def read_ie_stops(stop_file):
 
     return stops
 
-def read_no_stops(stop_file):
+def read_de_no_stops(stop_file):
 
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
@@ -122,8 +122,7 @@ def read_no_stops(stop_file):
 
     return stops
 
-
-stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_no_stops}
+stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_de_no_stops, 'de':read_de_no_stops}
 
 def print_csv_results(stations, args):
 
@@ -201,7 +200,7 @@ def get_arguments():
                     description = "Return a list of SOTA summits near public transport sites ordered by distance to the user",
                     epilog = "Text at the bottom of help")
 
-    parser.add_argument("stop_file_type", choices=["gb","ni","ie","no"], help="gb for Great Britain. ni for Northern Ireland. ie for Republic of Ireland")
+    parser.add_argument("stop_file_type", choices=["gb","ni","ie","no","de"], help="gb for Great Britain. ni for Northern Ireland. ie for Republic of Ireland. no for Norway. de for Germany.")
     parser.add_argument("stop_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
     parser.add_argument("region")
