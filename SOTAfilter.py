@@ -159,10 +159,12 @@ results_printers = {'csv':print_csv_results, 'json':print_json_results}
 
 def main(args):
 
-    stops = stops_parsers[args.stop_file_type](args.stop_file)
+    stop_file = open(args.stop_file, "r", encoding=args.e)
+    stops = stops_parsers[args.stop_file_type](stop_file)
 
-    args.summit_file.readline()
-    summit_reader = csv.DictReader(args.summit_file, delimiter=",", quotechar="\"")
+    summit_file = open(args.summit_file, "r", encoding=args.e)
+    summit_file.readline()
+    summit_reader = csv.DictReader(summit_file, delimiter=",", quotechar="\"")
 
     stations = dict()
 
@@ -201,8 +203,9 @@ def get_arguments():
                     epilog = "Text at the bottom of help")
 
     parser.add_argument("stop_file_type", choices=["gb","ni","ie","no","de"], help="gb for Great Britain. ni for Northern Ireland. ie for Republic of Ireland. no for Norway. de for Germany.")
-    parser.add_argument("stop_file", type=argparse.FileType("r", encoding="latin-1"))
-    parser.add_argument("summit_file", type=argparse.FileType("r", encoding="latin-1"))
+    parser.add_argument("-e", default="latin-1", help="File encoding for stop and summit files")
+    parser.add_argument("stop_file")
+    parser.add_argument("summit_file")
     parser.add_argument("region")
     parser.add_argument("-f", choices=["json", "csv"], default="csv", help="Output format. Either csv or geoJSON")
     parser.add_argument("-v", default=0, action="count", help="Print debug statements. Omit for no debug. -v for info. -vv for debug")
