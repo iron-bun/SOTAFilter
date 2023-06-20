@@ -35,6 +35,8 @@ from datetime import date
 
 bucket_distance = 0.08
 walking_distance = 5 #km
+cycling_distance = 10
+cycling_stop_types = ['RSE','RLY','RPL']
 
 log = logging.getLogger(__name__)
 logging.basicConfig()
@@ -76,10 +78,12 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
             lat = float(stop["Latitude"])
             lon = float(stop["Longitude"])
 
+        stop_type = stop["StopType"]
+
         b_lat = round(lat / bucket_distance)
         b_lon = round(lon / bucket_distance)
 
-        stops[b_lat, b_lon].append({"id":stop[global_id], "name":stop["CommonName"], "lat":lat, "lon":lon})
+        stops[b_lat, b_lon].append({"id":stop[global_id], "name":stop["CommonName"], "StopType":stop_type, "lat":lat, "lon":lon})
 
     return stops
 
@@ -100,8 +104,9 @@ def read_ie_stops(stop_file):
 
         lat = round(stop["geometry"]["coordinates"][1] / bucket_distance)
         lon = round(stop["geometry"]["coordinates"][0] / bucket_distance)
+        stop_type = stop["properties"]["StopType"]
 
-        stops[lat, lon].append({"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
+        stops[lat, lon].append({"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "StopType": stop_type, "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
 
     return stops
 
@@ -130,27 +135,36 @@ def print_csv_results(stations, args):
     for summit, data in stations.items():
         stops = sorted(data["stops"], key=lambda x:x[0])
         for stop in stops:
-            print(f"{summit}, {data['lat']}, {data['lon']}, {stop[1]['id']}, {stop[1]['name']}, {stop[1]['lat']}, {stop[1]['lon']}")
+            print(f"{summit}, {data['lat']}, {data['lon']}, {data['points']}, {stop[1]['id']}, {stop[1]['name']}, {stop[1]['lat']}, {stop[1]['lon']}")
 
 def print_json_results(stations, args):
     results = []
  
     for summit in stations:
-        tmp = {"id": summit, "name": stations[summit]["name"], "coordinates":[stations[summit]["lat"], stations[summit]["lon"]], "stops":[]}
+        tmp = {"id": summit, "name": stations[summit]["name"], "points": stations[summit]["points"], "coordinates":[stations[summit]["lat"], stations[summit]["lon"]], "stops":[]}
 
-        angles = defaultdict(list)
+        walking_angles = defaultdict(list)
+        cycling_angles = defaultdict(list)
+
         for stop in stations[summit]["stops"]:
-            dist = stop[0]
-            stop = stop[1]
+            dist,stop,stop_type = stop
 
             angle = hangle(stations[summit]["lat"], stations[summit]["lon"], stop["lat"], stop["lon"])/10
             angle = round(angle)
 
-            angles[angle].append((dist, {"name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]}))
+            if stop_type in cycling_stop_types:
+                cycling_angles[angle].append((dist, {"id": stop["id"], "name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]}))
+            else:
+                walking_angles[angle].append((dist, {"id": stop["id"], "name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]}))
 
-        for k, v in angles.items():
+        for k, v in walking_angles.items():
             v = sorted(v, key=lambda x:x[0])
             tmp["stops"].append(v[0][1])
+
+        for k, v in cycling_angles.items():
+            v = sorted(v, key=lambda x:x[0])
+            tmp["stops"].append(v[0][1])
+
         results.append(tmp)
 
     print(json.dumps(results))
@@ -180,20 +194,25 @@ def main(args):
             continue
 
         lat,lon = float(summit["Latitude"]), float(summit["Longitude"])
-
         b_lat, b_lon = round(lat/bucket_distance), round(lon/bucket_distance)
 
-        for i in range(b_lat-1, b_lat+2):
-            for j in range(b_lon-1, b_lon+2):
+        points = summit["Points"]
+
+        for i in range(b_lat-2, b_lat+3):
+            for j in range(b_lon-2, b_lon+3):
                 if (i, j) in stops:
                     for stop in stops[i, j]:
 
                         dist = hdist(lat, lon, stop["lat"], stop["lon"])
+                        if "StopType" in stop:
+                            stop_type = stop["StopType"]
+                        else:
+                            stop_type = ""
 
-                        if dist <= walking_distance:
+                        if (stop_type in cycling_stop_types and dist <= cycling_distance) or dist <= walking_distance:
                             if summit["SummitCode"] not in stations:
-                                stations[summit["SummitCode"]] = {"name": summit["SummitName"], "lat":lat, "lon":lon, "stops":[]}
-                            stations[summit["SummitCode"]]["stops"].append((dist, stop))
+                                stations[summit["SummitCode"]] = {"name": summit["SummitName"], "points":points, "lat":lat, "lon":lon, "stops":[]}
+                            stations[summit["SummitCode"]]["stops"].append((dist, stop, stop_type))
     results_printers[args.f](stations, args)
 
 def get_arguments():
