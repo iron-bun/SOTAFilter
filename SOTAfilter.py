@@ -127,7 +127,23 @@ def read_de_no_stops(stop_file):
 
     return stops
 
-stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_de_no_stops, 'de':read_de_no_stops}
+def read_je_stops(stop_file):
+
+    stops = defaultdict(list)
+    stop_reader = json.load(stop_file)
+
+    for stop in stop_reader["stops"]:
+        lat = float(stop["Latitude"])
+        lon = float(stop["Longitude"])
+
+        b_lat = round(lat / bucket_distance)
+        b_lon = round(lon / bucket_distance)
+
+        stops[b_lat, b_lon].append({"id":stop["StopNumber"], "name":stop["StopName"], "lat":lat, "lon":lon})
+
+    return stops
+
+stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_de_no_stops, 'de':read_de_no_stops, 'je':read_je_stops}
 
 def print_csv_results(stations, args):
 
@@ -135,7 +151,7 @@ def print_csv_results(stations, args):
     for summit, data in stations.items():
         stops = sorted(data["stops"], key=lambda x:x[0])
         for stop in stops:
-            print(f"{summit}, {data['lat']}, {data['lon']}, {data['points']}, {stop[1]['id']}, {stop[1]['name']}, {stop[1]['lat']}, {stop[1]['lon']}")
+            print(f"{summit}, {data['lat']}, {data['lon']}, {data['points']}, {stop[1]['id']}, {stop[1]['name']}, {stop[1]['lat']}, {stop[1]['lon']}, {stop[0]}")
 
 def print_json_results(stations, args):
     results = []
@@ -221,7 +237,7 @@ def get_arguments():
                     description = "Return a list of SOTA summits near public transport sites ordered by distance to the user",
                     epilog = "Text at the bottom of help")
 
-    parser.add_argument("stop_file_type", choices=["gb","ni","ie","no","de"], help="gb for Great Britain. ni for Northern Ireland. ie for Republic of Ireland. no for Norway. de for Germany.")
+    parser.add_argument("stop_file_type", choices=stops_parsers.keys())
     parser.add_argument("-e", default="latin-1", help="File encoding for stop and summit files")
     parser.add_argument("stop_file")
     parser.add_argument("summit_file")
