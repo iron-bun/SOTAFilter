@@ -143,7 +143,25 @@ def read_je_stops(stop_file):
 
     return stops
 
-stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_de_no_stops, 'de':read_de_no_stops, 'je':read_je_stops}
+def read_im_stops(stop_file):
+    stops = defaultdict(list)
+    stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
+
+    for stop in stop_reader:
+
+        lat = float(stop["Latitude"].replace(',','.'))
+        lon = float(stop["Longitude"].replace(',','.'))
+
+        b_lat = round(lat / bucket_distance)
+        b_lon = round(lon / bucket_distance)
+
+        stop_type = stop["StopType"]
+
+        stops[b_lat, b_lon].append({"id":stop["Stop No"], "name":stop["Location"], "StopType": stop_type, "lat":lat, "lon":lon})
+
+    return stops
+
+stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_de_no_stops, 'de':read_de_no_stops, 'je':read_je_stops, 'im':read_im_stops}
 
 def print_csv_results(stations, args):
 
