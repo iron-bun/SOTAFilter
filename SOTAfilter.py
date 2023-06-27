@@ -61,7 +61,7 @@ def hangle(lat1, lon1, lat2, lon2):
     angle = atan2(dy, cos(pi/180*lat1)*dx)
     return degrees(angle)
 
-def read_gb_ni_stops(stop_file,has_status,global_id):
+def read_gb_ni_stops(stop_file,summits, merge_stop, has_status, global_id):
 
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
@@ -78,22 +78,19 @@ def read_gb_ni_stops(stop_file,has_status,global_id):
             lat = float(stop["Latitude"])
             lon = float(stop["Longitude"])
 
+        stop_id = stop[global_id]
+        stop_name = stop["CommonName"]
         stop_type = stop["StopType"]
 
-        b_lat = round(lat / bucket_distance)
-        b_lon = round(lon / bucket_distance)
+        merge_stop(summits, {"id":stop_id, "name":stop_name, "StopType": stop_type, "lat":lat, "lon":lon})
 
-        stops[b_lat, b_lon].append({"id":stop[global_id], "name":stop["CommonName"], "StopType":stop_type, "lat":lat, "lon":lon})
+def read_gb_stops(stop_file, summits, merge_stop):
+    return read_gb_ni_stops(stop_file, summits, merge_stop, True, "ATCOCode")
 
-    return stops
+def read_ni_stops(stop_file, summits, merge_stop):
+    return read_gb_ni_stops(stop_file, summits, merge_stop, False, "AtcoCode")
 
-def read_gb_stops(stop_file):
-    return read_gb_ni_stops(stop_file, True, "ATCOCode")
-
-def read_ni_stops(stop_file):
-    return read_gb_ni_stops(stop_file, False, "AtcoCode")
-
-def read_ie_stops(stop_file):
+def read_ie_stops(stop_file, summits, merge_stop):
 
     stop_reader = json.load(stop_file)
     stops = defaultdict(list)
@@ -106,11 +103,9 @@ def read_ie_stops(stop_file):
         lon = round(stop["geometry"]["coordinates"][0] / bucket_distance)
         stop_type = stop["properties"]["StopType"]
 
-        stops[lat, lon].append({"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "StopType": stop_type, "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
+        merge_stop(summits, {"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "StopType": stop_type, "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
 
-    return stops
-
-def read_de_no_stops(stop_file):
+def read_de_no_stops(stop_file, summits, merge_stop):
 
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
@@ -123,11 +118,9 @@ def read_de_no_stops(stop_file):
         b_lat = round(lat / bucket_distance)
         b_lon = round(lon / bucket_distance)
 
-        stops[b_lat, b_lon].append({"id":stop["stop_id"], "name":stop["stop_name"], "lat":lat, "lon":lon})
+        merge_stop(summits, {"id":stop["stop_id"], "name":stop["stop_name"], "lat":lat, "lon":lon})
 
-    return stops
-
-def read_je_stops(stop_file):
+def read_je_stops(stop_file, summits, merge_stop):
 
     stops = defaultdict(list)
     stop_reader = json.load(stop_file)
@@ -139,11 +132,9 @@ def read_je_stops(stop_file):
         b_lat = round(lat / bucket_distance)
         b_lon = round(lon / bucket_distance)
 
-        stops[b_lat, b_lon].append({"id":stop["StopNumber"], "name":stop["StopName"], "lat":lat, "lon":lon})
+        merge_stop(summits, {"id":stop["StopNumber"], "name":stop["StopName"], "lat":lat, "lon":lon})
 
-    return stops
-
-def read_im_stops(stop_file):
+def read_im_stops(stop_file, summits, merge_stop):
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
 
@@ -151,75 +142,77 @@ def read_im_stops(stop_file):
 
         lat = float(stop["Latitude"].replace(',','.'))
         lon = float(stop["Longitude"].replace(',','.'))
-
-        b_lat = round(lat / bucket_distance)
-        b_lon = round(lon / bucket_distance)
-
         stop_type = stop["StopType"]
 
-        stops[b_lat, b_lon].append({"id":stop["Stop No"], "name":stop["Location"], "StopType": stop_type, "lat":lat, "lon":lon})
+        merge_stop(summits, {"id":stop["Stop No"], "name":stop["Location"], "StopType": stop_type, "lat":lat, "lon":lon})
 
-    return stops
+def read_fr_stops(stop_file, summits, merge_stop):
+    stops = defaultdict(list)
+    stop_reader = json.load(stop_file)
 
-stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_de_no_stops, 'de':read_de_no_stops, 'je':read_je_stops, 'im':read_im_stops}
+    for stop in stop_reader["features"]:
+        if stop["geometry"] == None:
+            continue
 
-def print_csv_results(stations, args):
+        log.debug(stop)
+
+        stop_id = stop["properties"]["id"]
+        stop_name = stop["properties"]["name"]
+        lat = float(stop["geometry"]["coordinates"][1])
+        lon = float(stop["geometry"]["coordinates"][0])
+
+        merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon})
+
+stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_de_no_stops, 'de':read_de_no_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops}
+
+def print_csv_results(summit_squares, args):
 
     print("SummitCode, SummitLatitude, SummitLongitude, StationCode, StationName, StationLatitude, StationLongitude")
-    for summit, data in stations.items():
-        stops = sorted(data["stops"], key=lambda x:x[0])
-        for stop in stops:
-            print(f"{summit}, {data['lat']}, {data['lon']}, {data['points']}, {stop[1]['id']}, {stop[1]['name']}, {stop[1]['lat']}, {stop[1]['lon']}, {stop[0]}")
+    for k, summits in summit_squares.items():
+        for summit in summits:
+            for angle, (distance, stop) in summit["walking_stops"].items():
+                print(f"{summit['summit_code']}, {summit['lat']}, {summit['lon']}, {summit['points']}, {stop['id']}, {stop['name']}, {stop['lat']}, {stop['lon']}, {distance}")
+            for angle, (distance, stop) in summit["cycling_stops"].items():
+                print(f"{summit['summit_code']}, {summit['lat']}, {summit['lon']}, {summit['points']}, {stop['id']}, {stop['name']}, {stop['lat']}, {stop['lon']}, {distance}")
 
-def print_json_results(stations, args):
+def print_json_results(summit_squares, args):
     results = []
  
-    for summit in stations:
-        tmp = {"id": summit, "name": stations[summit]["name"], "points": stations[summit]["points"], "coordinates":[stations[summit]["lat"], stations[summit]["lon"]], "stops":[]}
+    for k, summits in summit_squares.items():
+        for summit in summits:
+            if len(summit["cycling_stops"]) + len(summit["walking_stops"]) == 0:
+                pass
+                continue
 
-        walking_angles = defaultdict(list)
-        cycling_angles = defaultdict(list)
+            tmp = dict()
+            tmp["id"] = summit["summit_code"]
+            tmp["name"] = summit["name"]
+            tmp["points"] = summit["points"]
+            tmp["coordinates"] = [summit["lat"], summit["lon"]]
+            tmp["stops"] = []
 
-        for stop in stations[summit]["stops"]:
-            dist,stop,stop_type = stop
+            for angle, (dist, stop) in summit["cycling_stops"].items():
+                tmp["stops"].append({"id": stop["id"], "name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]})
+            for angle, (dist, stop) in summit["walking_stops"].items():
+                tmp["stops"].append({"id": stop["id"], "name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]})
 
-            angle = hangle(stations[summit]["lat"], stations[summit]["lon"], stop["lat"], stop["lon"])/10
-            angle = round(angle)
-
-            if stop_type in cycling_stop_types:
-                cycling_angles[angle].append((dist, {"id": stop["id"], "name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]}))
-            else:
-                walking_angles[angle].append((dist, {"id": stop["id"], "name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]}))
-
-        for k, v in walking_angles.items():
-            v = sorted(v, key=lambda x:x[0])
-            tmp["stops"].append(v[0][1])
-
-        for k, v in cycling_angles.items():
-            v = sorted(v, key=lambda x:x[0])
-            tmp["stops"].append(v[0][1])
-
-        results.append(tmp)
+            results.append(tmp)
 
     print(json.dumps(results))
     
 results_printers = {'csv':print_csv_results, 'json':print_json_results}
 
-def main(args):
-
-    stop_file = open(args.stop_file, "r", encoding=args.e)
-    stops = stops_parsers[args.stop_file_type](stop_file)
-
-    summit_file = open(args.summit_file, "r", encoding=args.e)
+def read_summits(summit_file):
     summit_file.readline()
     summit_reader = csv.DictReader(summit_file, delimiter=",", quotechar="\"")
 
-    stations = dict()
+    summit_squares = defaultdict(list)
 
     for summit in summit_reader:
         summit_code = summit["SummitCode"]
         region_code = summit_code[:summit_code.find("/")]
         if region_code != args.region:
+            log.debug(f"discarding {summit['SummitCode']} as not in selected region ({args.region})")
             continue
 
         day, month, year = list(map(int, summit["ValidTo"].split("/")))
@@ -232,22 +225,56 @@ def main(args):
 
         points = summit["Points"]
 
-        for i in range(b_lat-2, b_lat+3):
-            for j in range(b_lon-2, b_lon+3):
-                if (i, j) in stops:
-                    for stop in stops[i, j]:
+        summit_squares[(b_lat, b_lon)].append({"summit_code":summit_code, "name": summit["SummitName"], "points":points, "lat":lat, "lon":lon, "cycling_stops":{}, "walking_stops":{}})
 
-                        dist = hdist(lat, lon, stop["lat"], stop["lon"])
-                        if "StopType" in stop:
-                            stop_type = stop["StopType"]
-                        else:
-                            stop_type = ""
+    log.info(f"loaded {len(summit_squares)} squares of data")
+    return summit_squares
 
-                        if (stop_type in cycling_stop_types and dist <= cycling_distance) or dist <= walking_distance:
-                            if summit["SummitCode"] not in stations:
-                                stations[summit["SummitCode"]] = {"name": summit["SummitName"], "points":points, "lat":lat, "lon":lon, "stops":[]}
-                            stations[summit["SummitCode"]]["stops"].append((dist, stop, stop_type))
-    results_printers[args.f](stations, args)
+def merge_stations(summits, stop):
+
+    b_lat = round(stop["lat"]/bucket_distance)
+    b_lon = round(stop["lon"]/bucket_distance)
+
+    if "StopType" in stop:
+        stop_type = stop["StopType"]
+    else:
+        stop_type = ""
+
+    if stop_type in cycling_stop_types:
+        filter_distance = cycling_distance
+    else:
+        filter_distance = walking_distance
+
+    for i in range(b_lat-2, b_lat+3):
+        for j in range(b_lon-2, b_lon+3):
+            for summit in summits[(i, j)]:
+                log.info(f"testing summit {summit} against stop {stop}")
+
+                dist = hdist(summit["lat"], summit["lon"], stop["lat"], stop["lon"])
+                if dist > filter_distance:
+                    continue
+
+                if stop_type in cycling_stop_types:
+                    stops = summit["cycling_stops"]
+                else:
+                    stops = summit["walking_stops"]
+
+                angle = hangle(summit["lat"], summit["lon"], stop["lat"], stop["lon"])
+                angle = round(angle/10)
+                if angle not in stops:
+                    stops[angle] = (dist, stop)
+                elif dist < stops[angle][0]:
+                    stops[angle] = (dist, stop)
+
+def main(args):
+
+    summit_file = open(args.summit_file, "r", encoding=args.e)
+    summits = read_summits(summit_file)
+
+    stop_file = open(args.stop_file, "r", encoding=args.e)
+    stops = stops_parsers[args.stop_file_type](stop_file, summits, merge_stations)
+
+    results_printers[args.f](summits, args)
 
 def get_arguments():
     parser = argparse.ArgumentParser(

@@ -17,6 +17,7 @@ Download the stops data for the desired area:
 * Jersey: https://opendata.gov.je/dataset/live-bus-times under Open Government Licence – Jersey v1.0 (http://sojbuslivetimespublic.azurewebsites.net/api/Values/v1/0/49.2178/-2.13819/20000/10000)
 * Norway: https://developer.entur.org/stops-and-timetable-data licensed under the NLOD 2.0 (https://data.norge.no/nlod/en/2.0)
 * Germany: https://gtfs.de/en/feeds/de_full/ licensed under CC 4.0
+* France: https://www.data.gouv.fr/fr/datasets/r/ba635ef6-b506-4381-9dc9-b51ad3c482ab Open Data Commons Open Database License 
 
 Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
 
