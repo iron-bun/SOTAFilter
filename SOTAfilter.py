@@ -26,6 +26,7 @@ SOFTWARE.
 import csv
 import argparse
 import json
+import json_stream
 import sys
 from collections import defaultdict
 from math import cos, asin, radians, degrees, atan2, pi
@@ -148,18 +149,17 @@ def read_im_stops(stop_file, summits, merge_stop):
 
 def read_fr_stops(stop_file, summits, merge_stop):
     stops = defaultdict(list)
-    stop_reader = json.load(stop_file)
+    stop_reader = json_stream.load(stop_file)
 
     for stop in stop_reader["features"]:
-        if stop["geometry"] == None:
+        properties = stop["properties"]
+        stop_id = properties["id"]
+        stop_name = properties["name"]
+        geometry = stop["geometry"]
+        if geometry == None:
             continue
-
-        log.debug(stop)
-
-        stop_id = stop["properties"]["id"]
-        stop_name = stop["properties"]["name"]
-        lat = float(stop["geometry"]["coordinates"][1])
-        lon = float(stop["geometry"]["coordinates"][0])
+        lat, lon = geometry["coordinates"]
+        lat, lon = float(lat), float(lon)
 
         merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon})
 
