@@ -72,6 +72,7 @@
             var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name;
             var summit = L.marker(feature.coordinates, {name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(summit_layer);
             summit.on('click', summitClicked);
+            summit.on('remove', summitRemoved);
 
             if (feature.id == summit_ref) found_summit = true;
             
@@ -90,7 +91,7 @@
     function summitClicked(e) {
         global_map.eachLayer((layer) => {if (layer.options.type == "stops") layer.remove();});
 
-        var lg = L.layerGroup(null, {type:"stops"});
+        var lg = L.layerGroup(null, {parent:e.target.options.name, type:"stops"});
         e.target.options.stops.forEach( (stop) => {
             popupText = stop.name + "</br><a href='https://www.google.com/maps/dir/?api=1&destination=" + stop.coordinates[0] + "," + stop.coordinates[1] + "&travelmode=transit' target='_new'>directions</a>";
             L.marker(stop.coordinates, {icon:greenIcon}).bindPopup(popupText).addTo(lg);
@@ -98,6 +99,10 @@
 
         get_routes(e.target.options.name, lg);
         lg.addTo(global_map);
+    }
+
+    function summitRemoved(e) {
+        global_map.eachLayer((layer) => {if (layer.options.type == "stops" && layer.options.parent == e.target.options.name) layer.remove()});
     }
         
     var cached_routes = {};
