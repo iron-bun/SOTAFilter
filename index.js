@@ -1,7 +1,4 @@
     let global_map;
-    let global_summits;
-    let summits = {}
-    let global_stops;
 
     var greenIcon = new L.Icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
@@ -20,13 +17,11 @@
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(global_map);
 
-        global_summits = L.markerClusterGroup().addTo(global_map);
-        global_stops = L.layerGroup().addTo(global_map);
-
         var client = new XMLHttpRequest();
         client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_regions(client.responseText); };
         client.open('GET', './data/regions.json');
         client.send();
+
     }
 
     function load_regions(contents) {
@@ -43,7 +38,6 @@
             opt.innerHTML = result.description;
             region_selector.appendChild(opt);
         });
-
 
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
@@ -66,52 +60,46 @@
 
     function load_features(contents, summit_ref) {
 
-        global_summits.clearLayers();
-        summits = {}
-
         var features = JSON.parse(contents);
+
+        global_map.eachLayer((layer) => {if (layer.options.type == "summit") layer.remove();});
+        var summit_layer = L.markerClusterGroup({type:"summit"});
+
+        var found_summit = false;
 
         features.forEach( (feature) => {
 
             var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name;
-            var summit = L.marker(feature.coordinates).bindPopup(popupText);
+            var summit = L.marker(feature.coordinates, {name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(summit_layer);
+            summit.on('click', summitClicked);
 
-            var lg = L.layerGroup();
-            feature.stops.forEach( (stop) => {
-                popupText = stop.name + "</br><a href='https://www.google.com/maps/dir/?api=1&destination=" + stop.coordinates[0] + "," + stop.coordinates[1] + "&travelmode=transit' target='_new'>directions</a>";
-                L.marker(stop.coordinates, {icon:greenIcon}).bindPopup(popupText).addTo(lg);
-            });
-
-
-            summit.on('click', getClickEvent(feature.id, lg));
-            summit.on('remove', getRemoveEvent(lg));
-
-            global_summits.addLayer(summit);
-            summits[feature.id] = summit;
+            if (feature.id == summit_ref) found_summit = true;
             
         });
 
-        if (summit_ref in summits)
-            highlight_summit(summit_ref);
-        else
-            global_map.fitBounds(global_summits.getBounds());
-
-    }
-
-    function getRemoveEvent(thisLayerGroup) {
-        return (e) => {
-            thisLayerGroup.remove();
+        summit_layer.addTo(global_map);
+        if (found_summit)
+            highlight_summit(summit_ref)
+        else {
+            global_map.fitBounds(summit_layer.getBounds());
         }
+
+
     }
 
-    function getClickEvent(summit_id, thisLayerGroup) {
-        return (e) => {
-            global_stops.eachLayer((layer) => { layer.remove(); });
-            global_stops.addLayer(thisLayerGroup);
-            get_routes(summit_id, thisLayerGroup);
-        }
-    }
+    function summitClicked(e) {
+        global_map.eachLayer((layer) => {if (layer.options.type == "stops") layer.remove();});
 
+        var lg = L.layerGroup(null, {type:"stops"});
+        e.target.options.stops.forEach( (stop) => {
+            popupText = stop.name + "</br><a href='https://www.google.com/maps/dir/?api=1&destination=" + stop.coordinates[0] + "," + stop.coordinates[1] + "&travelmode=transit' target='_new'>directions</a>";
+            L.marker(stop.coordinates, {icon:greenIcon}).bindPopup(popupText).addTo(lg);
+        });
+
+        get_routes(e.target.options.name, lg);
+        lg.addTo(global_map);
+    }
+        
     var cached_routes = {};
     function get_routes(summit_id, thisLayerGroup) {
 
@@ -157,9 +145,14 @@
           get_features(summit_ref);
       }
 
-      else if (summit_ref in summits) {
-          global_summits.zoomToShowLayer(summits[summit_ref]);
-          summits[summit_ref].fire('click');
+      else {
+          global_map.eachLayer((layer) => { if (layer.options.type == "summit") {
+              layer.eachLayer((summit) => {if (summit.options.name == summit_ref) {
+                  layer.zoomToShowLayer(summit);
+                  summit.fire('click');
+                  }
+               });
+          }});
       }
   }
 
