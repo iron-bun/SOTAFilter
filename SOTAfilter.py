@@ -47,13 +47,23 @@ def hav(theta):
     return (1-cos(theta))/2
 
 def hdist(lat1, lon1, lat2, lon2):
-
     earth_radius = 6371 #km
     dy = lat1 - lat2
     dx = lon1 - lon2
-    
     h = hav(dy) + cos(radians(lat1)) * cos(radians(lat2)) * hav(dx)
     return 2*earth_radius*asin(h**0.5)
+
+def hrange(lat1, lon1, distance, tc):
+    d=(pi/(180*60))*(distance/0.54)
+    earth_radius = 6371 #km
+    d = distance / earth_radius
+    tc = radians(tc)
+    lat=asin(sin(lat1)*cos(d)+cos(lat1)*sin(d)*cos(tc))
+    if (cos(lat)==0):
+        lon=lon1      # endpoint a pole
+    else:
+        lon=(lon1-asin(sin(tc)*sin(d)/cos(lat))+pi%2*pi)-pi
+    return lat, lon
 
 def hangle(lat1, lon1, lat2, lon2):
     dy = lat1 - lat2
@@ -106,7 +116,7 @@ def read_ie_stops(stop_file, summits, merge_stop):
 
         merge_stop(summits, {"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "StopType": stop_type, "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
 
-def read_de_no_stops(stop_file, summits, merge_stop):
+def read_gtfs_stops(stop_file, summits, merge_stop):
 
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
@@ -119,7 +129,7 @@ def read_de_no_stops(stop_file, summits, merge_stop):
         b_lat = round(lat / bucket_distance)
         b_lon = round(lon / bucket_distance)
 
-        merge_stop(summits, {"id":stop["stop_id"], "name":stop["stop_name"], "lat":lat, "lon":lon})
+        merge_stop(summits, {"id":stop["stop_id"], "name":stop["stop_name"], "lat":lat, "lon":lon, "StopType": ""})
 
 def read_je_stops(stop_file, summits, merge_stop):
 
@@ -133,7 +143,7 @@ def read_je_stops(stop_file, summits, merge_stop):
         b_lat = round(lat / bucket_distance)
         b_lon = round(lon / bucket_distance)
 
-        merge_stop(summits, {"id":stop["StopNumber"], "name":stop["StopName"], "lat":lat, "lon":lon})
+        merge_stop(summits, {"id":stop["StopNumber"], "name":stop["StopName"], "lat":lat, "lon":lon, "StopType": ""})
 
 def read_im_stops(stop_file, summits, merge_stop):
     stops = defaultdict(list)
@@ -161,9 +171,9 @@ def read_fr_stops(stop_file, summits, merge_stop):
         lat, lon = geometry["coordinates"]
         lat, lon = float(lat), float(lon)
 
-        merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon})
+        merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": ""})
 
-stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_de_no_stops, 'de':read_de_no_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops}
+stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'no':read_gtfs_stops, 'de':read_gtfs_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops, 'be':read_gtfs_stops}
 
 def print_csv_results(summit_squares, args):
 
@@ -232,29 +242,23 @@ def read_summits(summit_file):
 
 def merge_stations(summits, stop):
 
-    b_lat = round(stop["lat"]/bucket_distance)
-    b_lon = round(stop["lon"]/bucket_distance)
-
-    if "StopType" in stop:
-        stop_type = stop["StopType"]
-    else:
-        stop_type = ""
-
-    if stop_type in cycling_stop_types:
+    if stop["StopType"] in cycling_stop_types:
         filter_distance = cycling_distance
     else:
         filter_distance = walking_distance
 
+    b_lat = round(stop["lat"]/bucket_distance)
+    b_lon = round(stop["lon"]/bucket_distance)
+
     for i in range(b_lat-2, b_lat+3):
         for j in range(b_lon-2, b_lon+3):
             for summit in summits[(i, j)]:
-                log.info(f"testing summit {summit} against stop {stop}")
-
                 dist = hdist(summit["lat"], summit["lon"], stop["lat"], stop["lon"])
                 if dist > filter_distance:
                     continue
+                log.info(f"testing summit {summit} against stop {stop}")
 
-                if stop_type in cycling_stop_types:
+                if stop["StopType"] in cycling_stop_types:
                     stops = summit["cycling_stops"]
                 else:
                     stops = summit["walking_stops"]

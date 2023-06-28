@@ -10,14 +10,15 @@ will frequently fail to find a public transport route from you to the summit, bu
 
 Download the stops data for the desired area:
 
+* Belgium: https://opendata.tec-wl.be/Current%20GTFS/ licence free
+* France: https://www.data.gouv.fr/fr/datasets/r/ba635ef6-b506-4381-9dc9-b51ad3c482ab Open Data Commons Open Database License 
+* Germany: https://gtfs.de/en/feeds/de_full/ licensed under CC 4.0
 * Great Britain: https://beta-naptan.dft.gov.uk/ licensed under the UK Open Government License (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
-* Northern Ireland: https://www.opendatani.gov.uk/dataset/translink-bus-stop-list licensed under the UK Open Government Licence (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
-* Republic of Ireland: https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee with an unspecified license
 * Isle of Man: Data provided directly for this project
 * Jersey: https://opendata.gov.je/dataset/live-bus-times under Open Government Licence – Jersey v1.0 (http://sojbuslivetimespublic.azurewebsites.net/api/Values/v1/0/49.2178/-2.13819/20000/10000)
+* Northern Ireland: https://www.opendatani.gov.uk/dataset/translink-bus-stop-list licensed under the UK Open Government Licence (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 * Norway: https://developer.entur.org/stops-and-timetable-data licensed under the NLOD 2.0 (https://data.norge.no/nlod/en/2.0)
-* Germany: https://gtfs.de/en/feeds/de_full/ licensed under CC 4.0
-* France: https://www.data.gouv.fr/fr/datasets/r/ba635ef6-b506-4381-9dc9-b51ad3c482ab Open Data Commons Open Database License 
+* Republic of Ireland: https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee with an unspecified license
 
 Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
 
