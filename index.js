@@ -17,18 +17,43 @@
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(global_map);
 
-        var client = new XMLHttpRequest();
-        client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_regions(client.responseText); };
-        client.open('GET', './data/regions.json');
-        client.send();
+        var legend = L.control({position: 'topright'});
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            div.innerHTML = '<select id="region_selector"></select>';
+            div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
+
+            var client = new XMLHttpRequest();
+            client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_regions(client.responseText, div); };
+            client.open('GET', './data/regions.json');
+            client.send();
+
+            return div;
+        };
+        legend.addTo(global_map);
+
+	var markersLayer = new L.layerGroup(null, {type:"summits"});  //layer contain searched elements
+
+	global_map.addLayer(markersLayer);
+
+	var controlSearch = new L.Control.Search({
+		position:'topright',
+		layer: markersLayer,
+		zoom: 12,
+		marker: false
+	});
+        controlSearch.on('search:locationfound', (opts)=>{opts.layer.fire('click');});
+
+	global_map.addControl( controlSearch );
 
     }
 
-    function load_regions(contents) {
+    function load_regions(contents, div) {
 
         var results = JSON.parse(contents);
 
-        var region_selector = document.getElementById('region_selector');
+        var region_selector = div.firstChild;
+        region_selector.onchange = get_features;
         region_selector.disabled = false;
 
         results.forEach((result) => {
@@ -62,15 +87,19 @@
 
         var features = JSON.parse(contents);
 
-        global_map.eachLayer((layer) => {if (layer.options.type == "summit") layer.remove();});
-        var summit_layer = L.markerClusterGroup({type:"summit"});
+        var summit_layer = null;
+        global_map.eachLayer((layer) => {if (layer.options.type == "summits")
+            summit_layer = layer;
+        });
+        summit_layer.eachLayer((layer) => { layer.remove(); });
+        var marker_layer = L.markerClusterGroup();
 
         var found_summit = false;
 
         features.forEach( (feature) => {
 
             var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name;
-            var summit = L.marker(feature.coordinates, {name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(summit_layer);
+            var summit = L.marker(feature.coordinates, {type:"summit", title:feature.id + " " + feature.name, name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(marker_layer);
             summit.on('click', summitClicked);
             summit.on('remove', summitRemoved);
 
@@ -78,11 +107,12 @@
             
         });
 
-        summit_layer.addTo(global_map);
+        marker_layer.addTo(summit_layer);
+
         if (found_summit)
             highlight_summit(summit_ref)
         else {
-            global_map.fitBounds(summit_layer.getBounds());
+            global_map.fitBounds(marker_layer.getBounds());
         }
 
 
@@ -151,12 +181,12 @@
       }
 
       else {
-          global_map.eachLayer((layer) => { if (layer.options.type == "summit") {
-              layer.eachLayer((summit) => {if (summit.options.name == summit_ref) {
-                  layer.zoomToShowLayer(summit);
+          global_map.eachLayer((layer) => { if (layer.options.type == "summits") {
+              layer.eachLayer((clusterLayer) => {clusterLayer.eachLayer((summit) => {if (summit.options.name == summit_ref) {
+                  clusterLayer.zoomToShowLayer(summit);
                   summit.fire('click');
                   }
-               });
+               });})
           }});
       }
   }

@@ -1,5 +1,6 @@
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
  <meta property="og:title" content="HamHiker Transit" />
  <meta property="og:description" content="Find SOTA summits with nearby transit stops" />
  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
@@ -11,9 +12,16 @@
  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" integrity="sha256-YU3qCpj/P06tdPBJGPax0bm6Q1wltfwjsho5TR4+TYc=" crossorigin="anonymous">
  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" integrity="sha256-YSWCMtmNZNwqex4CEw1nQhvFub2lmU7vcCKP+XVwwXA=" crossorigin="anonymous">
  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" integrity="sha256-Hk4dIpcqOSb0hZjgyvFOP+cEmDXUKKNE/tT542ZbNQg=" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/leaflet-search@3.0.9/dist/leaflet-search.min.js" integrity="sha384-Hq19ol1xoXvfoySRy5wOlQ9ju/ptmX1nMQjjg3Yc9ngu2TE6UMCwJzX+NPltkyD0" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-search@3.0.9/dist/leaflet-search.min.css" integrity="sha384-NX03kgr4jdc5o3e+FaaaEfS9M+rjY7e9w6kcEGOjgbn7+PxaLvU4FvgHlDlPv+QZ" crossorigin="anonymous">
  <style>
-    #map {
-        height: 90%;
+    body {
+        padding: 0;
+        margin: 0;
+    }
+    html, body, #map {
+        height: 100%;
+        width: 100vw;
     }
     #faq_button { float: right; }
     #faq {
@@ -33,25 +41,6 @@
  <script src="./index.js"></script>
 </head>
 <body onload="init_map()">
- Select Region: <select id="region_selector" disabled="true" onchange="get_features()">
-   <option value='null'>--</option>
- </select>
- Search for summit by ref <input id="summit_ref" onKeyPress="check_search(event)"/><button onclick="go_search()">Go</button>
- <div id="faq_button" onclick="show_hide_faq()">FAQ</div>
- <div id="faq">
-   <h1>What are you trying to do here?</h1>
-   <p>I would like to go to <a href="https://www.sota.org.uk/">SOTA</a> summits with my amateur radio gear but I don't have a car so I have to take public transport. This map shows SOTA summits within 5km of a public transport stop, which includes (depending on the data availability) bus and train stops and ferry terminals.</p>
-   <h1>Why not use Google maps or something?</h1>
-   <p>Itinerary services are great if you know where you want to go and it's a short walk once you get there. Looking for routes to summits often returns no results even when there are public transport stops within a reasonable hike. Scouring the map for the nearest suitable bus stop made me very thoughtful about automation. This site starts by filtering out summits that are definitely out of reach, then links you to directions to the transit stop which usually gives good results.</p>
-   <h1>I found a stop that nothing seems to go to?</h1>
-   <p>The existence of a bus stop does not imply the existence of a bus and there are a lot of orphaned stops in the world. You should work out and verify your travel plans using a different service. Scheduling is a hard problem and outside the scope of this site.</p>
-   <h1>Why is my summit missing? I know buses go there.</h1>
-   <p>I can't find the stop in the publically avaiable data. Some bus services will stop or collect on demand without an official stop in the area which is great for flexibility, but incorporating that would need a <em>lot</em> more data and processing. Some summits are going to be unfairly dropped.</p>
-   <h1>Why only 5/10km to a transit stop? Can I change it?</h1>
-   <p>5km was a figure I plucked from the air based on my own ability to hike over unfamiliar ground for an hour or two. It assumes that you won't be travelling in a straight line and also that there will be a significant amount of ascent and descent. If you can do better, that's fantastic. Wherever I draw the line will be unsuitable for some people. Train stations are included up to 10km away as it is assumed bikes can be loaded onto trains so cycling from there to the foot of the summit is a useful option.</p>
-   <h1>Where did you get all the data?</h1>
-   <p>Links to the data, attribution and licenses can be found on the github for this project at <a href="https://github.com/iron-bun/SOTAFilter">https://github.com/iron-bun/SOTAFilter</a>. Bug reports, suggestions and patches are welcome.</p>
- </div>
  <div id="map"></div>
 </body>
 </html>
