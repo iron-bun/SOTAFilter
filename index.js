@@ -1,6 +1,6 @@
     let global_map;
 
-    var greenIcon = new L.Icon({
+    let greenIcon = new L.Icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
       iconSize: [25, 41],
@@ -12,16 +12,17 @@
     function init_map() {
         global_map = L.map('map', {center: [56.05331379149255, -9.889521032420252], zoom:10});
 
-        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(global_map);
 
-        var legend = L.control({position: 'topright'});
-        legend.onAdd = function (map) {
+        let regions = L.control({position: 'topright'});
+        regions.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'info legend');
             div.innerHTML = '<select id="region_selector"></select>';
             div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
+            div.onchange = get_features;
 
             var client = new XMLHttpRequest();
             client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_regions(client.responseText, div); };
@@ -30,13 +31,23 @@
 
             return div;
         };
-        legend.addTo(global_map);
+        regions.addTo(global_map);
 
-	var markersLayer = new L.layerGroup(null, {type:"summits"});  //layer contain searched elements
+        let points = L.control({position: 'topright'});
+        points.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            div.innerHTML = '<select id="points_filter"><option value="All">All points</option><option>1</option><option>2</option><option>4</option><option>6</option><option>8</option><option>10</option></select>';
+            div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
+            div.onchange = get_features;
+            return div;
+        };
+        points.addTo(global_map);
+
+	let markersLayer = new L.layerGroup(null, {type:"summits"});  //layer contain searched elements
 
 	global_map.addLayer(markersLayer);
 
-	var controlSearch = new L.Control.Search({
+	let controlSearch = new L.Control.Search({
 		position:'topright',
 		layer: markersLayer,
 		zoom: 12,
@@ -50,14 +61,13 @@
 
     function load_regions(contents, div) {
 
-        var results = JSON.parse(contents);
+        let results = JSON.parse(contents);
 
-        var region_selector = div.firstChild;
-        region_selector.onchange = get_features;
+        let region_selector = div.firstChild;
         region_selector.disabled = false;
 
         results.forEach((result) => {
-            var opt = document.createElement('option');
+            let opt = document.createElement('option');
 
             opt.value = result.region;
             opt.innerHTML = result.description;
@@ -73,10 +83,10 @@
 
     function get_features(summit_ref=null) {
 
-        var region_selector = document.getElementById('region_selector');
+        let region_selector = document.getElementById('region_selector');
         if (region_selector.value == 'null') { return; }
 
-        var client = new XMLHttpRequest();
+        let client = new XMLHttpRequest();
 
         client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_features(client.responseText, summit_ref); };
         client.open('GET', `./data/${region_selector.value}.json`);
@@ -86,6 +96,7 @@
     function load_features(contents, summit_ref) {
 
         var features = JSON.parse(contents);
+        let points_filter = document.getElementById('points_filter').value;
 
         var summit_layer = null;
         global_map.eachLayer((layer) => {if (layer.options.type == "summits")
@@ -96,16 +107,16 @@
 
         var found_summit = false;
 
-        features.forEach( (feature) => {
+        features.forEach( (feature) => {if (points_filter == "All" || points_filter == feature.points) {
 
-            var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name;
+            var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name + " (" + feature.points + ")";
             var summit = L.marker(feature.coordinates, {type:"summit", title:feature.id + " " + feature.name, name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(marker_layer);
             summit.on('click', summitClicked);
             summit.on('remove', summitRemoved);
 
             if (feature.id == summit_ref) found_summit = true;
             
-        });
+        }});
 
         marker_layer.addTo(summit_layer);
 
