@@ -53,18 +53,6 @@ def hdist(lat1, lon1, lat2, lon2):
     h = hav(dy) + cos(radians(lat1)) * cos(radians(lat2)) * hav(dx)
     return 2*earth_radius*asin(h**0.5)
 
-def hrange(lat1, lon1, distance, tc):
-    d=(pi/(180*60))*(distance/0.54)
-    earth_radius = 6371 #km
-    d = distance / earth_radius
-    tc = radians(tc)
-    lat=asin(sin(lat1)*cos(d)+cos(lat1)*sin(d)*cos(tc))
-    if (cos(lat)==0):
-        lon=lon1      # endpoint a pole
-    else:
-        lon=(lon1-asin(sin(tc)*sin(d)/cos(lat))+pi%2*pi)-pi
-    return lat, lon
-
 def hangle(lat1, lon1, lat2, lon2):
     dy = lat1 - lat2
     dx = lon1 - lon2
@@ -212,30 +200,31 @@ def print_json_results(summit_squares, args):
     
 results_printers = {'csv':print_csv_results, 'json':print_json_results}
 
+def filter_summits(summit, region):
+    summit_code = summit["SummitCode"]
+    region_code = summit_code[:summit_code.find("/")]
+    if region_code != region:
+        log.debug(f"discarding {summit['SummitCode']} as not in selected region ({args.region})")
+        return False
+
+    day, month, year = list(map(int, summit["ValidTo"].split("/")))
+    if date(year, month, day) < date.today():
+        log.info(f"discarding {summit['SummitCode']} as no longer valid ({summit['ValidTo']})")
+        return False
+    return True
+
 def read_summits(summit_file):
     summit_file.readline()
     summit_reader = csv.DictReader(summit_file, delimiter=",", quotechar="\"")
 
     summit_squares = defaultdict(list)
 
-    for summit in summit_reader:
-        summit_code = summit["SummitCode"]
-        region_code = summit_code[:summit_code.find("/")]
-        if region_code != args.region:
-            log.debug(f"discarding {summit['SummitCode']} as not in selected region ({args.region})")
-            continue
-
-        day, month, year = list(map(int, summit["ValidTo"].split("/")))
-        if date(year, month, day) < date.today():
-            log.info(f"discarding {summit['SummitCode']} as no longer valid ({summit['ValidTo']})")
-            continue
+    for summit in filter(lambda s: filter_summits(s, args.region),summit_reader):
 
         lat,lon = float(summit["Latitude"]), float(summit["Longitude"])
         b_lat, b_lon = round(lat/bucket_distance), round(lon/bucket_distance)
 
-        points = summit["Points"]
-
-        summit_squares[(b_lat, b_lon)].append({"summit_code":summit_code, "name": summit["SummitName"], "points":points, "lat":lat, "lon":lon, "cycling_stops":{}, "walking_stops":{}})
+        summit_squares[(b_lat, b_lon)].append({"summit_code":summit["SummitCode"], "name": summit["SummitName"], "points":summit["Points"], "lat":lat, "lon":lon, "cycling_stops":{}, "walking_stops":{}})
 
     log.info(f"loaded {len(summit_squares)} squares of data")
     return summit_squares
