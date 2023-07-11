@@ -156,7 +156,7 @@ def read_fr_stops(stop_file, summits, merge_stop):
         geometry = stop["geometry"]
         if geometry == None:
             continue
-        lat, lon = geometry["coordinates"]
+        lon, lat = geometry["coordinates"]
         lat, lon = float(lat), float(lon)
 
         merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": ""})
@@ -209,7 +209,7 @@ def filter_summits(summit, region):
 
     day, month, year = list(map(int, summit["ValidTo"].split("/")))
     if date(year, month, day) < date.today():
-        log.info(f"discarding {summit['SummitCode']} as no longer valid ({summit['ValidTo']})")
+        log.debug(f"discarding {summit['SummitCode']} as no longer valid ({summit['ValidTo']})")
         return False
     return True
 
