@@ -26,9 +26,9 @@ time ./SOTAfilter.py -f json ni sources/09-05-2022busstop-list.csv sources/summi
 time ./SOTAfilter.py -f json je sources/jersey.json sources/summitslist.csv GJ > data/GJ.json
 time ./SOTAfilter.py -f json -e utf-8 gb sources/gb_stops.csv sources/summitslist.csv GM > data/GM.json
 time ./SOTAfilter.py -f json gb sources/gb_stops.csv sources/summitslist.csv GW > data/GW.json
-time ./SOTAfilter.py -f json -e utf-8 no sources/no_stops.txt sources/summitslist.csv LA > data/LA.json
-time ./SOTAfilter.py -f json -e utf-8 de sources/de_stops.txt sources/summitslist.csv DM > data/DM.json
-time ./SOTAfilter.py -f json -e utf-8 be sources/be_stops.txt sources/summitslist.csv ON > data/ON.json
+time ./SOTAfilter.py -f json -e utf-8 gtfs sources/no_stops.txt sources/summitslist.csv LA > data/LA.json
+time ./SOTAfilter.py -f json -e utf-8 gtfs sources/de_stops.txt sources/summitslist.csv DM > data/DM.json
+time ./SOTAfilter.py -f json -e utf-8 gtfs sources/be_stops.txt sources/summitslist.csv ON > data/ON.json
 time ./SOTAfilter.py -f json fr sources/public-transit.geojson sources/summitslist.csv F > data/F.json
 time ./SOTAfilter.py -f json fr sources/public-transit.geojson sources/summitslist.csv FL > data/FL.json
 
