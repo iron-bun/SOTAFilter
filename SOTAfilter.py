@@ -105,45 +105,29 @@ def read_ie_stops(stop_file, summits, merge_stop):
         merge_stop(summits, {"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "StopType": stop_type, "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
 
 def read_gtfs_stops(stop_file, summits, merge_stop):
+    read_csv_stops(stop_file, summits, merge_stop, "stop_id", "stop_name", "stop_lat", "stop_lon", None)
 
+def read_csv_stops(stop_file, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None):
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
+    read_stops(stop_reader, summits, merge_stop, ID, NAME, LAT, LON, TYPE)
 
+def read_stops(stop_reader, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None):
     for stop in stop_reader:
 
-        lat = float(stop["stop_lat"])
-        lon = float(stop["stop_lon"])
-
-        b_lat = round(lat / bucket_distance)
-        b_lon = round(lon / bucket_distance)
-
-        merge_stop(summits, {"id":stop["stop_id"], "name":stop["stop_name"], "lat":lat, "lon":lon, "StopType": ""})
+        if TYPE != None:
+            stop_type = stop[TYPE]
+        else:
+            stop_type = ""
+        merge_stop(summits, {"id":stop[ID], "name":stop[NAME], "lat":float(stop[LAT]), "lon":float(stop[LON]), "StopType": stop_type})
 
 def read_je_stops(stop_file, summits, merge_stop):
-
     stops = defaultdict(list)
     stop_reader = json.load(stop_file)
-
-    for stop in stop_reader["stops"]:
-        lat = float(stop["Latitude"])
-        lon = float(stop["Longitude"])
-
-        b_lat = round(lat / bucket_distance)
-        b_lon = round(lon / bucket_distance)
-
-        merge_stop(summits, {"id":stop["StopNumber"], "name":stop["StopName"], "lat":lat, "lon":lon, "StopType": ""})
+    read_stops(stop_reader["stops"], summits, merge_stop, "StopNumber", "StopName", "Latitude", "Longitude")
 
 def read_im_stops(stop_file, summits, merge_stop):
-    stops = defaultdict(list)
-    stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
-
-    for stop in stop_reader:
-
-        lat = float(stop["Latitude"].replace(',','.'))
-        lon = float(stop["Longitude"].replace(',','.'))
-        stop_type = stop["StopType"]
-
-        merge_stop(summits, {"id":stop["Stop No"], "name":stop["Location"], "StopType": stop_type, "lat":lat, "lon":lon})
+    read_csv_stops(stop_file, summits, merge_stop, "Stop No", "Location", "Latitude", "Longitude", "StopType")
 
 def read_fr_stops(stop_file, summits, merge_stop):
     stops = defaultdict(list)
