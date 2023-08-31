@@ -19,17 +19,29 @@ then
   echo "Germany stops data not found \(sources/no_stops.txt\)"
 else
 
-time ./SOTAfilter.py -f json ie sources/naptan.json sources/summitslist.csv EI > data/EI.json
-time ./SOTAfilter.py -f json gb sources/gb_stops.csv sources/summitslist.csv G > data/G.json
-time ./SOTAfilter.py -f json im sources/iom_stops.csv sources/summitslist.csv GD > data/GD.json
+echo EI
+time ./SOTAfilter.py -f json -e utf-8 ie sources/naptan.json sources/summitslist.csv EI > data/EI.json
+echo G
+time ./SOTAfilter.py -f json -e utf-8 gb sources/gb_stops.csv sources/summitslist.csv G > data/G.json
+echo GD
+time ./SOTAfilter.py -f json -e utf-8 im sources/iom_stops.csv sources/summitslist.csv GD > data/GD.json
+echo GI
 time ./SOTAfilter.py -f json ni sources/09-05-2022busstop-list.csv sources/summitslist.csv GI > data/GI.json
-time ./SOTAfilter.py -f json je sources/jersey.json sources/summitslist.csv GJ > data/GJ.json
+echo GJ
+time ./SOTAfilter.py -f json -e utf-8 je sources/jersey.json sources/summitslist.csv GJ > data/GJ.json
+echo GM
 time ./SOTAfilter.py -f json -e utf-8 gb sources/gb_stops.csv sources/summitslist.csv GM > data/GM.json
-time ./SOTAfilter.py -f json gb sources/gb_stops.csv sources/summitslist.csv GW > data/GW.json
+echo GW
+time ./SOTAfilter.py -f json -e utf-8 gb sources/gb_stops.csv sources/summitslist.csv GW > data/GW.json
+echo LA
 time ./SOTAfilter.py -f json -e utf-8 gtfs sources/no_stops.txt sources/summitslist.csv LA > data/LA.json
+echo DM
 time ./SOTAfilter.py -f json -e utf-8 gtfs sources/de_stops.txt sources/summitslist.csv DM > data/DM.json
+echo ON
 time ./SOTAfilter.py -f json -e utf-8 gtfs sources/be_stops.txt sources/summitslist.csv ON > data/ON.json
-time ./SOTAfilter.py -f json fr sources/public-transit.geojson sources/summitslist.csv F > data/F.json
-time ./SOTAfilter.py -f json fr sources/public-transit.geojson sources/summitslist.csv FL > data/FL.json
+echo F
+time ./SOTAfilter.py -f json -e utf-8 fr sources/public-transit.geojson sources/summitslist.csv F > data/F.json
+echo FL
+time ./SOTAfilter.py -f json -e utf-8 fr sources/public-transit.geojson sources/summitslist.csv FL > data/FL.json
 
 fi
