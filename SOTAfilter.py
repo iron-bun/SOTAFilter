@@ -107,6 +107,9 @@ def read_ie_stops(stop_file, summits, merge_stop):
 def read_gtfs_stops(stop_file, summits, merge_stop):
     read_csv_stops(stop_file, summits, merge_stop, "stop_id", "stop_name", "stop_lat", "stop_lon", None)
 
+def read_kr_stops(stop_file, summits, merge_stop):
+    read_csv_stops(stop_file, summits, merge_stop, "\ufeff정류장번호", "정류장명", "위도", "경도", None)
+
 def read_csv_stops(stop_file, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None):
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
@@ -145,7 +148,7 @@ def read_fr_stops(stop_file, summits, merge_stop):
 
         merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": ""})
 
-stops_parsers = {'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'gtfs':read_gtfs_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops}
+stops_parsers = {'kr':read_kr_stops, 'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'gtfs':read_gtfs_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops}
 
 def print_csv_results(summit_squares, args):
 
@@ -229,7 +232,7 @@ def merge_stations(summits, stop):
                 dist = hdist(summit["lat"], summit["lon"], stop["lat"], stop["lon"])
                 if dist > filter_distance:
                     continue
-                log.info(f"testing summit {summit} against stop {stop}")
+                log.debug(f"testing summit {summit} against stop {stop}")
 
                 if stop["StopType"] in cycling_stop_types:
                     stops = summit["cycling_stops"]

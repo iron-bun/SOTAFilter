@@ -43,5 +43,7 @@ echo F
 time ./SOTAfilter.py -f json -e utf-8 fr sources/public-transit.geojson sources/summitslist.csv F > data/F.json
 echo FL
 time ./SOTAfilter.py -f json -e utf-8 fr sources/public-transit.geojson sources/summitslist.csv FL > data/FL.json
+echo HL
+time ./SOTAfilter.py -f json -e utf-8 kr sources/2022년_전국버스정류장\ 위치정보_데이터.csv sources/summitslist.csv HL > data/HL.json
 
 fi

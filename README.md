@@ -20,6 +20,7 @@ Download the stops data for the desired area:
 * Northern Ireland: https://www.opendatani.gov.uk/dataset/translink-bus-stop-list licensed under the UK Open Government Licence (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 * Norway: https://developer.entur.org/stops-and-timetable-data licensed under the NLOD 2.0 (https://data.norge.no/nlod/en/2.0)
 * Republic of Ireland: https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee with an unspecified license
+* Republic of Korea: https://www.data.go.kr/en/data/15067528/fileData.do with an unlimited use licence
 
 Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
 
