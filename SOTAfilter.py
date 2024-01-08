@@ -113,6 +113,7 @@ def read_kr_stops(stop_file, summits, merge_stop):
 def read_csv_stops(stop_file, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None):
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
+    log.info(stop_reader.fieldnames)
     read_stops(stop_reader, summits, merge_stop, ID, NAME, LAT, LON, TYPE)
 
 def read_stops(stop_reader, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None):
@@ -173,6 +174,7 @@ def print_json_results(summit_squares, args):
             tmp["id"] = summit["summit_code"]
             tmp["name"] = summit["name"]
             tmp["points"] = summit["points"]
+            tmp["bonusPoints"] = summit["bonusPoints"]
             tmp["coordinates"] = [summit["lat"], summit["lon"]]
             tmp["stops"] = []
 
@@ -211,7 +213,7 @@ def read_summits(summit_file):
         lat,lon = float(summit["Latitude"]), float(summit["Longitude"])
         b_lat, b_lon = round(lat/bucket_distance), round(lon/bucket_distance)
 
-        summit_squares[(b_lat, b_lon)].append({"summit_code":summit["SummitCode"], "name": summit["SummitName"], "points":summit["Points"], "lat":lat, "lon":lon, "cycling_stops":{}, "walking_stops":{}})
+        summit_squares[(b_lat, b_lon)].append({"summit_code":summit["SummitCode"], "name": summit["SummitName"], "points":summit["Points"], "bonusPoints":summit["BonusPoints"], "lat":lat, "lon":lon, "cycling_stops":{}, "walking_stops":{}})
 
     log.info(f"loaded {len(summit_squares)} squares of data")
     return summit_squares

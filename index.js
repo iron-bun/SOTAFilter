@@ -9,6 +9,15 @@
       shadowSize: [41, 41]
     });
 
+    let goldIcon = new L.Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
     function init_map() {
         global_map = L.map('map', {center: [56.05331379149255, -9.889521032420252], zoom:10});
 
@@ -109,8 +118,14 @@
 
         features.forEach( (feature) => {if (points_filter == "All" || points_filter == feature.points) {
 
-            var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name + " (" + feature.points + ")";
-            var summit = L.marker(feature.coordinates, {type:"summit", title:feature.id + " " + feature.name, name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(marker_layer);
+            var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name + " (" + feature.points;
+            if (feature.bonusPoints == "0"){
+              popupText += ")";
+              var summit = L.marker(feature.coordinates, {type:"summit", title:feature.id + " " + feature.name, name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(marker_layer);
+            } else {
+              popupText += "+" + feature.bonusPoints + ")";
+              var summit = L.marker(feature.coordinates, {icon:goldIcon, type:"summit", title:feature.id + " " + feature.name, name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(marker_layer);
+            }
             summit.on('click', summitClicked);
             summit.on('remove', summitRemoved);
 
