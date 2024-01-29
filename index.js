@@ -119,7 +119,7 @@
         features.forEach( (feature) => {if (points_filter == "All" || points_filter == feature.points) {
 
             var popupText = "<a href='https://sotl.as/summits/" + feature.id + "' target='_new'>" + feature.id + "</a></br>" + feature.name + " (" + feature.points;
-            if (feature.bonusPoints == "0"){
+            if (feature.bonusPoints == "undefined" || feature.bonusPoints == "0"){
               popupText += ")";
               var summit = L.marker(feature.coordinates, {type:"summit", title:feature.id + " " + feature.name, name:feature.id, stops:feature.stops}).bindPopup(popupText).addTo(marker_layer);
             } else {
