@@ -23,7 +23,7 @@
 
         let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: '<a href="./about.html">About Hamhiker Transit</a> | maps &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(global_map);
 
         let regions = L.control({position: 'topright'});
