@@ -45,5 +45,9 @@ echo FL
 time ./SOTAfilter.py -f json -e utf-8 fr sources/public-transit.geojson sources/summitslist.csv FL > data/FL.json
 echo HL
 time ./SOTAfilter.py -f json -e utf-8 kr sources/2022년_전국버스정류장\ 위치정보_데이터.csv sources/summitslist.csv HL > data/HL.json
+echo PA
+time ./SOTAfilter.py -f json -e utf-8 gtfs sources/nl_stops.txt sources/summitslist.csv PA > data/PA.json
+echo SM
+time ./SOTAfilter.py -f json -e utf-8 xml sources/_stops.xml sources/summitslist.csv SM > data/SM.json
 
 fi

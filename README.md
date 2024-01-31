@@ -21,7 +21,7 @@ Download the stops data for the desired area:
 * Norway: https://developer.entur.org/stops-and-timetable-data licensed under the NLOD 2.0 (https://data.norge.no/nlod/en/2.0)
 * Republic of Ireland: https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee with an unspecified license
 * Republic of Korea: https://www.data.go.kr/en/data/15067528/fileData.do with an unlimited use licence
-
+* Sweden: https://www.trafiklab.se/ under a public domain license but access requires a free account and is rate limited
 Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
 
 The program can produce a CSV file from an origin latitude and longitude (these are presently mandatory) and orders the list of summits by distance to that origin location, and then distance to stations in order of distance to that summit. For this mode run the script with:

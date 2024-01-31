@@ -28,11 +28,12 @@ import argparse
 import json
 import json_stream
 import sys
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from math import cos, asin, radians, degrees, atan2, pi
 import logging
 import bng_latlon
-from datetime import date
+from datetime import date, datetime
 
 bucket_distance = 0.08
 walking_distance = 5 #km
@@ -149,7 +150,27 @@ def read_fr_stops(stop_file, summits, merge_stop):
 
         merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": ""})
 
-stops_parsers = {'kr':read_kr_stops, 'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'gtfs':read_gtfs_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops}
+def read_netex_stops(stop_file, summits, merge_stop):
+    stops = defaultdict(list)
+    stop_reader = ET.parse(stop_file).getroot()
+
+    ns = {'ns': 'http://www.netex.org.uk/netex'}
+
+    for stop in stop_reader.findall("./ns:dataObjects/ns:SiteFrame/ns:stopPlaces/ns:StopPlace", namespaces=ns):
+      validFrom = stop.find("./ns:ValidBetween/ns:FromDate", namespaces=ns).text
+      validTo = stop.find("./ns:ValidBetween/ns:ToDate", namespaces=ns)
+
+      if validTo == None or datetime.strptime(validFrom,"%Y-%m-%dT%H:%M:%S").date() < date.today() < datetime.strptime(validTo.text,"%Y-%m-%dT%H:%M:%S").date():
+        stop_id = stop.attrib["id"]
+        stop_name = stop.find("./ns:Name", namespaces=ns)
+        stop_name = stop_name.text
+
+        lon, lat = stop.find("./ns:Centroid/ns:Location/ns:Longitude", namespaces=ns).text, stop.find("./ns:Centroid/ns:Location/ns:Latitude", namespaces=ns).text
+        lon, lat = float(lon), float(lat)
+
+        merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": ""})
+
+stops_parsers = {'kr':read_kr_stops, 'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'gtfs':read_gtfs_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops, 'netex':read_netex_stops}
 
 def print_csv_results(summit_squares, args):
 
