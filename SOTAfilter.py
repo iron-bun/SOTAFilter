@@ -164,11 +164,14 @@ def read_netex_stops(stop_file, summits, merge_stop):
         stop_id = stop.attrib["id"]
         stop_name = stop.find("./ns:Name", namespaces=ns)
         stop_name = stop_name.text
+        mode = stop.find("./ns:TransportMode", namespaces=ns).text
+        if mode == "rail":
+          mode = "RSE"
 
         lon, lat = stop.find("./ns:Centroid/ns:Location/ns:Longitude", namespaces=ns).text, stop.find("./ns:Centroid/ns:Location/ns:Latitude", namespaces=ns).text
         lon, lat = float(lon), float(lat)
 
-        merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": ""})
+        merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": mode})
 
 stops_parsers = {'kr':read_kr_stops, 'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'gtfs':read_gtfs_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops, 'netex':read_netex_stops}
 
