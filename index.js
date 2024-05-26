@@ -86,8 +86,14 @@
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const summit_ref = urlParams.get('summit');
-        if (summit_ref != null)
+        const region_ref = urlParams.get('region');
+
+        if (summit_ref != null) {
             highlight_summit(summit_ref);
+        } else if (region_ref != null) {
+            region_selector.value = region_ref;
+            get_features(null);
+        }
     }
 
     function get_features(summit_ref=null) {
