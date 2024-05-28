@@ -5,7 +5,7 @@
 
         let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
-            attribution: '<a href="./about.html">About Hamhiker Transit</a> | maps &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            attribution: '<a href="http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">data &copy; Local Government Boundary Commission for Scotland, 2014, licensed under the Open Government Licence</a> | maps &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(global_map);
 
 var regionLayer = L.layerGroup();
