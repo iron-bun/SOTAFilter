@@ -11,11 +11,11 @@
         var layerControl = L.control.layers(null, null).addTo(global_map);
 
         //Wales
-        var regions = ["Clywd", "Dyfed", "Gwent", "Gwynedd", "Mid Glamorgan", "Powys", "South Glamorgan", "West Glamorgan"];
+        var regions = ["Clwyd", "Dyfed", "Gwent", "Gwynedd", "Mid Glamorgan", "Powys", "South Glamorgan", "West Glamorgan"];
         add_regions(regions, layerControl);
 
         //Scotland
-        var regions = ["Borders", "Central", "Dumfries and Galloway", "Fife", "Grampian", "Highland", "Lothain", "Orkney", "Shetland", "Strathclyde", "Tayside", "Western Isles"];
+        var regions = ["Borders", "Central", "Dumfries and Galloway", "Fife", "Grampian", "Highland", "Lothian", "Orkney", "Shetland", "Strathclyde", "Tayside", "Western Isles"];
         add_regions(regions, layerControl);
 
     }
@@ -25,7 +25,7 @@
           var region = L.geoJSON();
           layerControl.addOverlay(region, name)
           region.onAdd = () => {
-          fetch(`./${name.toLowerCase().replace(' ', '_')}.json`)
+          fetch(`./${name.toLowerCase().replaceAll(' ', '_')}.json`)
              .then(response => response.json())
              .then(geojsonFeature => region.addData(geojsonFeature));
           };
