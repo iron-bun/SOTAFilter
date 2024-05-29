@@ -8,57 +8,26 @@
             attribution: '<a href="http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">data &copy; Local Government Boundary Commission for Scotland, 2014, licensed under the Open Government Licence</a> | maps &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(global_map);
 
-var regionLayer = L.layerGroup();
-fetch("./borders_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
+        var layerControl = L.control.layers(null, null).addTo(global_map);
 
-fetch("./central_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
+        //Wales
+        var regions = ["Clywd", "Dyfed", "Gwent", "Gwynedd", "Mid Glamorgan", "Powys", "South Glamorgan", "West Glamorgan"];
+        add_regions(regions, layerControl);
 
-fetch("./dumfries_and_galloway_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./fife_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./grampian_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./highland_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./lothian_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./orkney_islands_area_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./shetland_islands_area_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./strathclyde_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./tayside_region_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-fetch("./western_isles_islands_area_2nd.json")
-  .then(response => response.json())
-  .then(geojsonFeature => L.geoJSON(geojsonFeature).addTo(regionLayer));
-
-regionLayer.addTo(global_map);
+        //Scotland
+        var regions = ["Borders", "Central", "Dumfries and Galloway", "Fife", "Grampian", "Highland", "Lothain", "Orkney", "Shetland", "Strathclyde", "Tayside", "Western Isles"];
+        add_regions(regions, layerControl);
 
     }
 
-
+    function add_regions(regions, layerControl) {
+       regions.forEach((name) => {
+          var region = L.geoJSON();
+          layerControl.addOverlay(region, name)
+          region.onAdd = () => {
+          fetch(`./${name.toLowerCase().replace(' ', '_')}.json`)
+             .then(response => response.json())
+             .then(geojsonFeature => region.addData(geojsonFeature));
+          };
+       });
+    }
