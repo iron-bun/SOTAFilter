@@ -18,6 +18,13 @@
         var regions = ["Borders", "Central", "Dumfries and Galloway", "Fife", "Grampian", "Highland", "Lothian", "Orkney", "Shetland", "Strathclyde", "Tayside", "Western Isles"];
         add_regions(regions, layerControl);
 
+        //Northern Ireland
+        var regions = ["Antrim", "Armagh", "Down", "Fermanagh", "Londonderry", "Tyrone"];
+        add_regions(regions, layerControl);
+
+        //Most of England
+        var regions = ["Bedfordshire", "Berkshire", "Buckinghamshire", "Cambridgeshire", "Cheshire", "Cornwall", "Cumbria", "Derbyshire", "Devon", "Dorset", "East Sussex", "Essex", "Gloucestershire", "Greater London", "Greater Manchester", "Hampshire", "Herefordshire and Worcestershire", "Hertfordshire", "Isle of Wight", "Kent", "Lancashire", "Leicestershire", "Merseyside", "Norfolk", "Northamptonshire", "Northumberland", "Nottinghamshire", "Oxfordshire", "Shorpshire", "Somerset", "South Yorkshire", "Staffordshire", "Suffolk", "Surrey", "Tyne and Wear", "Warwickshire", "West Midlands", "West Sussex", "West Yorkshire", "Wiltshire"];
+        add_regions(regions, layerControl);
     }
 
     function add_regions(regions, layerControl) {
