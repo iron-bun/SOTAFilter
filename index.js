@@ -33,11 +33,10 @@
             div.firstChild.onmousedown = div.firstChild.ondblclick = L.DomEvent.stopPropagation;
             div.onchange = get_features;
 
-            var client = new XMLHttpRequest();
-            client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_regions(client.responseText, div); };
-            client.open('GET', './data/regions.json');
-            client.send();
-
+            fetch("./data/regions.json")
+                .then(response => {tmp = response.json(); console.log(tmp); return tmp})
+                .then(data => load_regions(data, div));
+	    
             return div;
         };
         regions.addTo(global_map);
@@ -70,12 +69,10 @@
 
     function load_regions(contents, div) {
 
-        let results = JSON.parse(contents);
-
         let region_selector = div.firstChild;
         region_selector.disabled = false;
 
-        results.forEach((result) => {
+        contents.forEach((result) => {
             let opt = document.createElement('option');
 
             opt.value = result.region;
@@ -101,16 +98,13 @@
         let region_selector = document.getElementById('region_selector');
         if (region_selector.value == 'null') { return; }
 
-        let client = new XMLHttpRequest();
-
-        client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_features(client.responseText, summit_ref); };
-        client.open('GET', `./data/${region_selector.value}.json`);
-        client.send();
+	fetch(`./data/${region_selector.value}.json`)
+            .then(response => response.json())
+            .then(data => load_features(data, summit_ref));
     }
 
-    function load_features(contents, summit_ref) {
+    function load_features(features, summit_ref) {
 
-        var features = JSON.parse(contents);
         let points_filter = document.getElementById('points_filter').value;
 
         var summit_layer = null;
@@ -174,12 +168,10 @@
             display_routes(summit_id, thisLayerGroup);
 
         } else {
-            var client = new XMLHttpRequest();
-
-            client.onreadystatechange = () => { if (client.readyState === 4 && client.status === 200) load_routes(summit_id, thisLayerGroup, client.responseText); };
-            client.open('GET', `https://api-db.sota.org.uk/smp/gpx/summit/${summit_id}`);
-            client.send();
-        }
+	    fetch(`https://api-db.sota.org.uk/smp/gpx/summit/${summit_id}`)
+                .then(response => response.body())
+                .then(data => load_routes(summit_id, thisLayerGroup, data));
+	}
     }
 
     function load_routes(summit_id, thisLayerGroup, contents) {
@@ -232,13 +224,3 @@
     let summit_ref = document.getElementById('summit_ref').value;
     highlight_summit(summit_ref);
   }
-
-  function show_hide_faq() {
-    var faq = document.getElementById("faq");
-    if (!faq.style.display || faq.style.display == "none") {
-        faq.style.display = "block";
-    } else {
-        faq.style.display = "none";
-    }
-  }
-
