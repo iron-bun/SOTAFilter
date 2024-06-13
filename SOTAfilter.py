@@ -32,7 +32,7 @@ import xml.etree.ElementTree as ET
 from collections import defaultdict
 from math import cos, asin, radians, degrees, atan2, pi
 import logging
-import bng_latlon
+from pyproj import CRS, Transformer
 from datetime import date, datetime
 
 bucket_distance = 0.08
@@ -62,6 +62,9 @@ def hangle(lat1, lon1, lat2, lon2):
     return degrees(angle)
 
 def read_gb_ni_stops(stop_file,summits, merge_stop, has_status, global_id):
+    wgs84 = CRS("WGS84")
+    bng = CRS("EPSG:27700")
+    transformer = Transformer.from_crs(bng,wgs84)
 
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
@@ -72,7 +75,7 @@ def read_gb_ni_stops(stop_file,summits, merge_stop, has_status, global_id):
             continue
 
         if stop["Latitude"] == "" or stop["Longitude"] == "":
-            lat,lon = bng_latlon.OSGB36toWGS84(int(stop['Easting']), int(stop['Northing']))
+            lat,long = transformer.transform(int(stop['Easting']),int(stop['Northing']))
             log.debug(f"Converted {stop['CommonName']} ({stop[global_id]}) from grid NT {stop['Northing']} {stop['Easting']} to {lat},{lon}")
         else:
             lat = float(stop["Latitude"])
@@ -105,26 +108,33 @@ def read_ie_stops(stop_file, summits, merge_stop):
 
         merge_stop(summits, {"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "StopType": stop_type, "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
 
-def read_gtfs_stops(stop_file, summits, merge_stop):
-    read_csv_stops(stop_file, summits, merge_stop, "stop_id", "stop_name", "stop_lat", "stop_lon", None)
+def read_gtfs_stops(stop_file, summits, merge_stop,transformer=None):
+    read_csv_stops(stop_file, summits, merge_stop, "stop_id", "stop_name", "stop_lat", "stop_lon", None, transformer)
 
 def read_kr_stops(stop_file, summits, merge_stop):
     read_csv_stops(stop_file, summits, merge_stop, "\ufeff정류장번호", "정류장명", "위도", "경도", None)
 
-def read_csv_stops(stop_file, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None):
+def read_csv_stops(stop_file, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None, transformer=None):
     stops = defaultdict(list)
     stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
     log.info(stop_reader.fieldnames)
-    read_stops(stop_reader, summits, merge_stop, ID, NAME, LAT, LON, TYPE)
+    read_stops(stop_reader, summits, merge_stop, ID, NAME, LAT, LON, TYPE, transformer)
 
-def read_stops(stop_reader, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None):
+def read_stops(stop_reader, summits, merge_stop, ID="stop_id", NAME="stop_name", LAT="stop_lat", LON="stop_lon", TYPE=None, transformer=None):
     for stop in stop_reader:
 
         if TYPE != None:
             stop_type = stop[TYPE]
         else:
             stop_type = ""
-        merge_stop(summits, {"id":stop[ID], "name":stop[NAME], "lat":float(stop[LAT]), "lon":float(stop[LON]), "StopType": stop_type})
+
+        if transformer == None:
+            lat, lon = float(stop[LAT]), float(stop[LON])
+        else:
+            lat, lon = transformer.transform(float(stop[LAT]), float(stop[LON]))
+            log.debug(f"Converted {stop[NAME]} ({stop[ID]}) from {stop[LAT]}, {stop[LON]} to {lat}, {lon}")
+
+        merge_stop(summits, {"id":stop[ID], "name":stop[NAME], "lat":lat, "lon":lon, "StopType": stop_type})
 
 def read_je_stops(stop_file, summits, merge_stop):
     stops = defaultdict(list)
@@ -173,6 +183,12 @@ def read_netex_stops(stop_file, summits, merge_stop):
 
         merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": mode})
 
+def read_VT_stops(stop_file, summits, merge_stop):
+    wgs84 = CRS("EPSG:4326")
+    vspm = CRS("EPSG:32145")
+    transformer = Transformer.from_crs(vspm,wgs84)
+    read_csv_stops(stop_file, summits, merge_stop, "stop_id", "stop_name", "x", "y", None, transformer)
+
 stops_parsers = {'kr':read_kr_stops,
                  'gb':read_gb_stops,
                  'ni':read_ni_stops,
@@ -182,7 +198,7 @@ stops_parsers = {'kr':read_kr_stops,
                  'im':read_im_stops,
                  'fr':read_fr_stops,
                  'netex':read_netex_stops,
-                 'csv':read_csv_stops}
+                 'VT':read_VT_stops}
 
 def print_csv_results(summit_squares, args):
 
