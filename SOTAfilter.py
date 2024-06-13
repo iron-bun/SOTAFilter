@@ -173,7 +173,16 @@ def read_netex_stops(stop_file, summits, merge_stop):
 
         merge_stop(summits, {"id":stop_id, "name":stop_name, "lat":lat, "lon":lon, "StopType": mode})
 
-stops_parsers = {'kr':read_kr_stops, 'gb':read_gb_stops, 'ni':read_ni_stops, 'ie':read_ie_stops, 'gtfs':read_gtfs_stops, 'je':read_je_stops, 'im':read_im_stops, 'fr':read_fr_stops, 'netex':read_netex_stops}
+stops_parsers = {'kr':read_kr_stops,
+                 'gb':read_gb_stops,
+                 'ni':read_ni_stops,
+                 'ie':read_ie_stops,
+                 'gtfs':read_gtfs_stops,
+                 'je':read_je_stops,
+                 'im':read_im_stops,
+                 'fr':read_fr_stops,
+                 'netex':read_netex_stops,
+                 'csv':read_csv_stops}
 
 def print_csv_results(summit_squares, args):
 
