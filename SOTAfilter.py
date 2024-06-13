@@ -286,8 +286,18 @@ def main(args):
     summit_file = open(args.summit_file, "r", encoding=args.e)
     summits = read_summits(summit_file)
 
-    stop_file = open(args.stop_file, "r", encoding=args.e)
-    stops = stops_parsers[args.stop_file_type](stop_file, summits, merge_stations)
+    stop_file_type = ""
+    for f in args.stop_files:
+      if f in stops_parsers.keys():
+        stop_file_type = f
+        continue
+
+      if stop_file_type == "":
+          print("Specify at least one stop file type before any stop files")
+          return
+
+      stop_file = open(f, "r", encoding=args.e)
+      stops_parsers[stop_file_type](stop_file, summits, merge_stations)
 
     results_printers[args.f](summits, args)
 
@@ -297,12 +307,11 @@ def get_arguments():
                     description = "Return a list of SOTA summits near public transport sites ordered by distance to the user",
                     epilog = "Text at the bottom of help")
 
-    parser.add_argument("stop_file_type", choices=stops_parsers.keys())
     parser.add_argument("-e", default="latin-1", help="File encoding for stop and summit files")
-    parser.add_argument("stop_file")
-    parser.add_argument("summit_file")
     parser.add_argument("region")
-    parser.add_argument("-f", choices=["json", "csv"], default="csv", help="Output format. Either csv or geoJSON")
+    parser.add_argument("summit_file")
+    parser.add_argument("stop_files", nargs="+")
+    parser.add_argument("-f", choices=["json", "csv"], default="josn", help="Output format. Either csv or geoJSON")
     parser.add_argument("-v", default=0, action="count", help="Print debug statements. Omit for no debug. -v for info. -vv for debug")
 
     args = parser.parse_args()
