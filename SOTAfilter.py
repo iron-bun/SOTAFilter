@@ -327,7 +327,7 @@ def get_arguments():
     parser.add_argument("region")
     parser.add_argument("summit_file")
     parser.add_argument("stop_files", nargs="+")
-    parser.add_argument("-f", choices=["json", "csv"], default="josn", help="Output format. Either csv or geoJSON")
+    parser.add_argument("-f", choices=["json", "csv"], default="json", help="Output format. Either csv or geoJSON")
     parser.add_argument("-v", default=0, action="count", help="Print debug statements. Omit for no debug. -v for info. -vv for debug")
 
     args = parser.parse_args()
