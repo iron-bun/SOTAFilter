@@ -75,7 +75,7 @@ def read_gb_ni_stops(stop_file,summits, merge_stop, has_status, global_id):
             continue
 
         if stop["Latitude"] == "" or stop["Longitude"] == "":
-            lat,long = transformer.transform(int(stop['Easting']),int(stop['Northing']))
+            lat,lon = transformer.transform(int(stop['Easting']),int(stop['Northing']))
             log.debug(f"Converted {stop['CommonName']} ({stop[global_id]}) from grid NT {stop['Northing']} {stop['Easting']} to {lat},{lon}")
         else:
             lat = float(stop["Latitude"])
