@@ -10,12 +10,15 @@ will frequently fail to find a public transport route from you to the summit, bu
 
 Download the stops data for the desired area:
 
+* Australia by region
+* * VK7 Tasmiania: https://www.transport.tas.gov.au/public_transport/gtfs-data
 * Belgium: https://opendata.tec-wl.be/Current%20GTFS/ licence free
 * France: https://www.data.gouv.fr/fr/datasets/r/ba635ef6-b506-4381-9dc9-b51ad3c482ab Open Data Commons Open Database License 
 * Germany: https://gtfs.de/en/feeds/de_full/ licensed under CC 4.0
 * Great Britain: https://beta-naptan.dft.gov.uk/ licensed under the UK Open Government License (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 * Isle of Man: Data provided directly for this project
 * Jersey: https://opendata.gov.je/dataset/live-bus-times under Open Government Licence – Jersey v1.0 (http://sojbuslivetimespublic.azurewebsites.net/api/Values/v1/0/49.2178/-2.13819/20000/10000)
+* Luxembourg: https://data.public.lu/fr/datasets/horaires-et-arrets-des-transport-publics-gtfs/
 * Netherlands: http://gtfs.ovapi.nl/nl/ under an open licence
 * Northern Ireland: https://www.opendatani.gov.uk/dataset/translink-bus-stop-list licensed under the UK Open Government Licence (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)
 * Norway: https://developer.entur.org/stops-and-timetable-data licensed under the NLOD 2.0 (https://data.norge.no/nlod/en/2.0)
@@ -23,14 +26,24 @@ Download the stops data for the desired area:
 * Republic of Korea: https://www.data.go.kr/en/data/15067528/fileData.do with an unlimited use licence
 * Sweden: https://www.trafiklab.se/ under a public domain license but access requires a free account and is rate limited
 Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
+* United States national data
+* * Intercity bus stops: https://data-usdot.opendata.arcgis.com/datasets/cf2bb37bcf4b4f0c8569059442aaa89e_0/explore?location=40.752295%2C-76.206658%2C4.54
+* United States by state
+* * W1
+* * * Connecticut: https://www.cttransit.com/about/developers
+* * * Maine
+* * * Massachusets RTA Bus stops: https://geo-massdot.opendata.arcgis.com/datasets/MassDOT::rta-bus-stops/explore
+* * * New Hampshire
+* * * Rhode Island: No summits there so not bothering.
+* * * Vermont: https://geodata.vermont.gov/datasets/VCGI::vt-data-public-transit-stops-from-gtfs-data-feeds-1/explore?location=43.804319%2C-72.809584%2C8.37
 
 The program can produce a CSV file from an origin latitude and longitude (these are presently mandatory) and orders the list of summits by distance to that origin location, and then distance to stations in order of distance to that summit. For this mode run the script with:
 
-`SOTAfilter.py -f csv [-v] {gb,ni,ie,no} stop_file summit_file region`
+`SOTAfilter.py -f csv [-v] {gb,ni,ie,no} region summit_file stop_file [more stop files]`
 
 There is also a index.html file which uses leaflet (https://leafletjs.com/) to display results on an interactive map. To generate the JSON for the map, run the script as follows:
 
-`SOTAfilter.py -f json {gb,ni,ie,no} stop_file summit_file region > region.json`
+`SOTAfilter.py -f json {gb,ni,ie,no} region summit_file stop_file [more stop files] > region.json`
 
 Index.html will perform an AJAX request to load in the regions.json file, and from there allow the user to load in region specific data. Clicking on a summit will expand the associated stops.
 

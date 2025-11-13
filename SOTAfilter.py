@@ -187,6 +187,9 @@ def read_VT_stops(stop_file, summits, merge_stop):
     wgs84 = CRS("EPSG:4326")
     vspm = CRS("EPSG:32145")
     transformer = Transformer.from_crs(vspm,wgs84)
+    read_ICBA_stops(stop_file, summits, merge_stop, transformer)
+
+def read_ICBA_stops(stop_file, summits, merge_stop, transformer=None):
     read_csv_stops(stop_file, summits, merge_stop, "stop_id", "stop_name", "x", "y", None, transformer)
 
 stops_parsers = {'kr':read_kr_stops,
@@ -198,7 +201,8 @@ stops_parsers = {'kr':read_kr_stops,
                  'im':read_im_stops,
                  'fr':read_fr_stops,
                  'netex':read_netex_stops,
-                 'VT':read_VT_stops}
+                 'VT':read_VT_stops,
+                 'ICBA':read_ICBA_stops}
 
 def print_csv_results(summit_squares, args):
 
