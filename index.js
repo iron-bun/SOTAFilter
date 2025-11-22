@@ -86,9 +86,9 @@
         const region_ref = urlParams.get('region');
 
         if (summit_ref != null) {
-            highlight_summit(summit_ref);
+            highlight_summit(summit_ref.toUpperCase());
         } else if (region_ref != null) {
-            region_selector.value = region_ref;
+            region_selector.value = region_ref.toUpperCase();
             get_features(null);
         }
     }
