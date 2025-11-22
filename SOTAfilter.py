@@ -91,22 +91,43 @@ def read_gb_stops(stop_file, summits, merge_stop):
     return read_gb_ni_stops(stop_file, summits, merge_stop, True, "ATCOCode")
 
 def read_ni_stops(stop_file, summits, merge_stop):
-    return read_gb_ni_stops(stop_file, summits, merge_stop, False, "AtcoCode")
+    wgs84 = CRS("WGS84")
+    bng = CRS("EPSG:27700")
+    transformer = Transformer.from_crs(bng,wgs84)
+
+    stops = defaultdict(list)
+    stop_reader = csv.DictReader(stop_file, delimiter=",", quotechar="\"")
+
+    for stop in stop_reader:
+
+        if stop["Latitude"] == "" or stop["Longitude"] == "":
+            lat,lon = transformer.transform(int(stop['Easting']),int(stop['Northing']))
+            log.debug(f"Converted {stop['Stop_Name']} ({stop['LocationID']}) from grid NT {stop['Northing']} {stop['Easting']} to {lat},{lon}")
+        else:
+            lat = float(stop["Latitude"])
+            lon = float(stop["Longitude"])
+
+        stop_id = stop["LocationID"]
+        stop_name = stop["Stop_Name"]
+        stop_type = ""
+
+        merge_stop(summits, {"id":stop_id, "name":stop_name, "StopType": stop_type, "lat":lat, "lon":lon})
 
 def read_ie_stops(stop_file, summits, merge_stop):
 
     stop_reader = json.load(stop_file)
     stops = defaultdict(list)
 
-    for stop in stop_reader["features"]:
-        if "isActive" in stop["properties"] and not stop["properties"]["isActive"]:
+    for stop in stop_reader["NaPTAN"]["StopPoints"]["StopPoint"]:
+        if "@Status" in stop and stop["@Status"]!="active":
             continue
 
-        lat = round(stop["geometry"]["coordinates"][1] / bucket_distance)
-        lon = round(stop["geometry"]["coordinates"][0] / bucket_distance)
-        stop_type = stop["properties"]["StopType"]
+        loc = stop["Place"]["Location"]["Translation"]
+        #lat = round(loc["Latitude"] / bucket_distance)
+        #lon = round(loc["Longitude"] / bucket_distance)
+        stop_type = stop["StopClassification"]["StopType"]
 
-        merge_stop(summits, {"id":stop["properties"]["AtcoCode"], "name":stop["properties"]["CommonName"], "StopType": stop_type, "lat":float(stop["geometry"]["coordinates"][1]), "lon":float(stop["geometry"]["coordinates"][0])})
+        merge_stop(summits, {"id":stop["AtcoCode"], "name":stop["Descriptor"]["CommonName"]["#text"], "StopType": stop_type, "lat":float(loc["Latitude"]), "lon":float(loc["Longitude"])})
 
 def read_gtfs_stops(stop_file, summits, merge_stop,transformer=None):
     read_csv_stops(stop_file, summits, merge_stop, "stop_id", "stop_name", "stop_lat", "stop_lon", None, transformer)
@@ -150,7 +171,10 @@ def read_fr_stops(stop_file, summits, merge_stop):
 
     for stop in stop_reader["features"]:
         properties = stop["properties"]
-        stop_id = properties["id"]
+        try:
+          stop_id = properties["id"]
+        except:
+          continue
         stop_name = properties["name"]
         geometry = stop["geometry"]
         if geometry == None:
@@ -232,9 +256,9 @@ def print_json_results(summit_squares, args):
             tmp["stops"] = []
 
             for angle, (dist, stop) in summit["cycling_stops"].items():
-                tmp["stops"].append({"id": stop["id"], "name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]})
+                tmp["stops"].append({"id": stop["id"], "name": f"{stop['name']} ({dist:2.2f}km)", "coordinates":[stop["lat"], stop["lon"]]})
             for angle, (dist, stop) in summit["walking_stops"].items():
-                tmp["stops"].append({"id": stop["id"], "name": stop["name"], "coordinates":[stop["lat"], stop["lon"]]})
+                tmp["stops"].append({"id": stop["id"], "name": f"{stop['name']} ({dist:2.2f}km)", "coordinates":[stop["lat"], stop["lon"]]})
 
             results.append(tmp)
 

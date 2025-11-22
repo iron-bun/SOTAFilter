@@ -25,7 +25,6 @@ Download the stops data for the desired area:
 * Republic of Ireland: https://data.gov.ie/en_GB/dataset/national-public-transport-access-nodes-naptan/resource/02871b06-937c-4232-a873-a3bc60e3d6ee with an unspecified license
 * Republic of Korea: https://www.data.go.kr/en/data/15067528/fileData.do with an unlimited use licence
 * Sweden: https://www.trafiklab.se/ under a public domain license but access requires a free account and is rate limited
-Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
 * United States national data
 * * Intercity bus stops: https://data-usdot.opendata.arcgis.com/datasets/cf2bb37bcf4b4f0c8569059442aaa89e_0/explore?location=40.752295%2C-76.206658%2C4.54
 * United States by state
@@ -37,6 +36,8 @@ Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.
 * * * Rhode Island: No summits there so not bothering.
 * * * Vermont: https://geodata.vermont.gov/datasets/VCGI::vt-data-public-transit-stops-from-gtfs-data-feeds-1/explore?location=43.804319%2C-72.809584%2C8.37
 
+Download the summit data from SOTA as summitslist.csv: https://mapping.sota.org.uk/summitslist.csv
+
 The program can produce a CSV file from an origin latitude and longitude (these are presently mandatory) and orders the list of summits by distance to that origin location, and then distance to stations in order of distance to that summit. For this mode run the script with:
 
 `SOTAfilter.py -f csv [-v] {gb,ni,ie,no} region summit_file stop_file [more stop files]`
@@ -46,6 +47,14 @@ There is also a index.html file which uses leaflet (https://leafletjs.com/) to d
 `SOTAfilter.py -f json {gb,ni,ie,no} region summit_file stop_file [more stop files] > region.json`
 
 Index.html will perform an AJAX request to load in the regions.json file, and from there allow the user to load in region specific data. Clicking on a summit will expand the associated stops.
+
+### full_convert.sh ###
+
+This script will attempt to download and compile data from all the sources that have a static URL
+
+At the moment that covers, DM, EI, G, GM, GW, LA, ON, PA and VK7.
+
+Other regions are in this script but downloads will need to be made manually from the links above
 
 ### To do list: ###
 
