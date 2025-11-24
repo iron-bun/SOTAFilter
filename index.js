@@ -169,15 +169,14 @@
 
         } else {
 	    fetch(`https://api-db.sota.org.uk/smp/gpx/summit/${summit_id}`)
-                .then(response => response.body())
+                .then(response => response.json())
                 .then(data => load_routes(summit_id, thisLayerGroup, data));
 	}
     }
 
-    function load_routes(summit_id, thisLayerGroup, contents) {
+    function load_routes(summit_id, thisLayerGroup, routes) {
         cached_routes[summit_id] = [];
 
-        var routes = JSON.parse(contents);
         routes.forEach( (route) => {
             tmp = [];
             route.points.forEach( (point) => {
